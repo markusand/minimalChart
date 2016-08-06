@@ -34,22 +34,33 @@ temp.add(tMin, tMax);
 
 * Draw Dots, Lines and Area charts
 * Tooltips to visualize values
+* Draw threshold as line or area
 
 ## Configuration
 
 Some parameters are available to customize the chart
 
-#### showAxis(boolean xAxis, boolean yAxis)
+#### stacked(true);
 Type: `boolean`  
 Default: `'false'`
 
-Define if horizontal and vertical axis are shown
+Every dataset is stacked over previous
 
-#### decimals(int dec)
+#### showAxis(true, true);
+Type: `boolean`  
+Default: `'false', 'false'`
+
+Display horizontal and vertical axis
+
+#### decimals(2);
 Type: `int`  
 Default: 0
 
-Define number of decimals are shown in labels and axis
+Set number of decimals to show in tooltips and axis
+
+#### threshold(String name, float min, float max [optional], color)
+
+Add threshold to graph. It can be a line or an area
 
 ## Contributing
 

@@ -57,6 +57,7 @@ public abstract class Chart {
     protected float max = Float.MIN_VALUE;
     protected int samples = 0;
     
+    protected ArrayList<Threshold> thresholds = new ArrayList<Threshold>();
     
     
     public Chart(int TLx, int TLy, int width, int height) {
@@ -73,6 +74,13 @@ public abstract class Chart {
     public void showAxis(boolean axisX, boolean axisY) {
         showAxisX = axisX;
         showAxisY = axisY;
+    }
+    
+    public void threshold(String name, float value, color tint) {
+        threshold(name, value, value, tint);
+    }
+    public void threshold(String name, float min, float max, color tint) {
+        thresholds.add( new Threshold(name, min, max, tint) );
     }
     
     
@@ -155,6 +163,10 @@ public abstract class Chart {
             }
         }
         
+        for(Threshold t : thresholds) {
+            t.draw(this);
+        }
+        
         for(Tooltip tooltip : tooltips) {
             tooltip.draw();
         }
@@ -162,7 +174,7 @@ public abstract class Chart {
     }
     
     
-    private boolean inChartMouse() {
+    protected boolean inChartMouse() {
         return mouseX > TL.x && mouseX < BR.x && mouseY > TL.y && mouseY < BR.y;
     }
     
@@ -173,7 +185,7 @@ public abstract class Chart {
         textSize(9);
         
         if(min < 0 && max > 0) {
-            float pos0 = pos0();
+            float pos0 = getPos(0);
             line(TL.x, pos0, BR.x, pos0);
             textAlign(LEFT, BOTTOM);
             text(0, TL.x + 2, pos0);
@@ -202,15 +214,15 @@ public abstract class Chart {
     }
     
     
-    private PVector getPos(int i, float value) {
+    protected PVector getPos(int i, float value) {
         return new PVector(
             map(i, 0, samples - 1, TL.x, BR.x),
-            map(value, min, max, BR.y, TL.y)
+            getPos(value)
         );
     }
     
-    protected float pos0() {
-        return map(0, min, max, BR.y, TL.y);
+    protected float getPos(float value) {
+        return map(value, min, max, BR.y, TL.y);
     }
     
     protected abstract void drawPos(Set set, PVector prevPosStack, PVector posStack, PVector prevPos, PVector pos );
@@ -281,6 +293,35 @@ public class AreaChart extends Chart {
     
 }
 
+
+
+private class Threshold {
+
+    private String name;
+    private float min, max;
+    private color tint;
+    
+    Threshold(String name, float min, float max, color tint) {
+        this.name = name;
+        this.min = min;
+        this.max = max;
+        this.tint = tint;
+    }
+    
+    protected void draw(Chart chart) {
+        
+        float posMin = min(chart.BR.y, chart.getPos(min));
+        float posMax = min != max ? max(chart.TL.y, chart.getPos(max)) : posMin;
+        
+        fill(tint, 100); stroke(tint); strokeWeight(1); rectMode(CORNERS);
+        rect(chart.TL.x, posMin, chart.BR.x, posMax);
+        
+        fill(tint); textAlign(LEFT, BOTTOM);
+        text(name, chart.TL.x + 3, posMin);
+        
+    }
+    
+}
 
 
 
