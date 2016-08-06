@@ -47,7 +47,7 @@ Define if horizontal and vertical axis are shown
 
 #### decimals(int dec)
 Type: `int`  
-Default: 1
+Default: 0
 
 Define number of decimals are shown in labels and axis
 

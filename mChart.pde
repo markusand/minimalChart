@@ -48,7 +48,9 @@ public abstract class Chart {
     
     protected boolean showAxisX;
     protected boolean showAxisY;
-    protected int decimals = 1;
+    protected int decimals = 0;
+    
+    protected boolean stacked;
     
     protected ArrayList<Set> sets = new ArrayList<Set>();   
     protected float min = Float.MAX_VALUE;
@@ -64,6 +66,9 @@ public abstract class Chart {
     
     
     public void decimals(int i) { decimals = i; }
+    
+    public void stacked(boolean stacked) { this.stacked = stacked; }
+    public boolean isStacked() { return stacked; }
     
     public void showAxis(boolean axisX, boolean axisY) {
         showAxisX = axisX;
@@ -82,6 +87,14 @@ public abstract class Chart {
     public void add(Set... sets) {
         for(Set set : sets) {
             this.sets.add(set);
+        }
+        if(stacked) calcStackedBounds();
+        else calcBounds();
+    }
+    
+    
+    private void calcBounds() {
+        for(Set set : sets) {
             if( set.min < min ) min = floor(set.min);
             if( set.max > max ) max = ceil(set.max);
             if( set.size() > samples ) samples = set.size();
@@ -89,18 +102,39 @@ public abstract class Chart {
     }
     
     
+    private void calcStackedBounds() {
+        FloatList stack = new FloatList();
+        for(Set set : sets) {
+            for(int i = 0; i < set.size(); i++) {
+                if(i >= stack.size()) stack.set(i, set.value(i));
+                else stack.add(i, set.value(i));
+                //if(set.value(i) < min) min = floor(set.value(i));
+            }
+        }
+        min = 0;
+        max = ceil(stack.max());
+        samples = stack.size();
+    }
+    
+    
     public void draw() {
         
         ArrayList<Tooltip> tooltips = new ArrayList<Tooltip>();
+        float[] stack = new float[samples];
         
         drawAxis();
         
         for(Set set : sets) {
+            
             PVector prevPos = null;
+            PVector prevPosStack = null;
+            
             for(int i = 0; i < set.size(); i++) {
                 
-                PVector pos = getPos(set, i);
-                drawPos(set, prevPos, pos);
+                PVector posStack = getPos(i, stack[i]);
+                PVector pos = getPos(i, stack[i] + set.value(i));
+                
+                drawPos(set, prevPosStack, posStack, prevPos, pos);
                 
                 if( inChartMouse() ) {
                     if(mouseX > pos.x - 5 && mouseX < pos.x + 5) {
@@ -114,6 +148,10 @@ public abstract class Chart {
                 }
                 
                 prevPos = pos;
+                prevPosStack = posStack;
+                
+                if(stacked) stack[i] = set.value(i);
+                
             }
         }
         
@@ -164,10 +202,10 @@ public abstract class Chart {
     }
     
     
-    private PVector getPos(Set set, int i) {
+    private PVector getPos(int i, float value) {
         return new PVector(
             map(i, 0, samples - 1, TL.x, BR.x),
-            map(set.value(i), min, max, BR.y, TL.y)
+            map(value, min, max, BR.y, TL.y)
         );
     }
     
@@ -175,7 +213,7 @@ public abstract class Chart {
         return map(0, min, max, BR.y, TL.y);
     }
     
-    protected abstract void drawPos(Set set, PVector prevPos, PVector pos );
+    protected abstract void drawPos(Set set, PVector prevPosStack, PVector posStack, PVector prevPos, PVector pos );
     
        
 }
@@ -188,7 +226,7 @@ public class DotChart extends Chart {
     }
     
     
-    protected void drawPos(Set set, PVector prevPos, PVector pos) {
+    protected void drawPos(Set set, PVector prevPosStack, PVector posStack, PVector prevPos, PVector pos) {
         fill(set.tint); noStroke();
         ellipse(pos.x, pos.y, 5, 5);
     }
@@ -204,7 +242,7 @@ public class LineChart extends Chart {
     }
     
     
-    protected void drawPos(Set set, PVector prevPos, PVector pos) {
+    protected void drawPos(Set set, PVector prevPosStack, PVector posStack, PVector prevPos, PVector pos) {
         fill(set.tint); noStroke();
         ellipse(pos.x, pos.y, 5, 5);
         stroke(set.tint); strokeWeight(1);
@@ -223,18 +261,16 @@ public class AreaChart extends Chart {
     }
     
     
-    public void drawPos(Set set, PVector prevPos, PVector pos) {
+    public void drawPos(Set set, PVector prevPosStack, PVector posStack, PVector prevPos, PVector pos) {
         
         fill(set.tint, 50); noStroke();
-        if(prevPos != null) {
-            
-            float pos0 = pos0();
+        if(prevPos != null && prevPosStack != null) {
             
             beginShape();
-            vertex(prevPos.x, pos0);
+            vertex(prevPosStack.x, prevPosStack.y);
             vertex(prevPos.x, prevPos.y);
             vertex(pos.x, pos.y);
-            vertex(pos.x, pos0);
+            vertex(posStack.x, posStack.y);
             endShape();
             
             stroke(set.tint); strokeWeight(1);
@@ -244,6 +280,8 @@ public class AreaChart extends Chart {
     }
     
 }
+
+
 
 
 private class Tooltip {
