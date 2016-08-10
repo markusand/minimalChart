@@ -128,9 +128,11 @@ public abstract class Chart {
     public void draw() {
         
         ArrayList<Tooltip> tooltips = new ArrayList<Tooltip>();
-        float[] stack = new float[samples];
+        float[] stack = new float[samples]; 
         
-        drawAxis();
+        if(showAxisX) drawAxisX();
+        if(showAxisY) drawAxisY();
+        if(min < 0 && max > 0) drawAxis0();
         
         for(Set set : sets) {
             
@@ -139,7 +141,7 @@ public abstract class Chart {
             
             for(int i = 0; i < set.size(); i++) {
                 
-                PVector posStack = getPos(i, stack[i]);
+                PVector posStack = getPos(i, stack[i] + min);
                 PVector pos = getPos(i, stack[i] + set.value(i));
                 
                 drawPos(set, prevPosStack, posStack, prevPos, pos);
@@ -158,13 +160,13 @@ public abstract class Chart {
                 prevPos = pos;
                 prevPosStack = posStack;
                 
-                if(stacked) stack[i] = set.value(i);
+                if(stacked) stack[i] += set.value(i);
                 
             }
         }
         
-        for(Threshold t : thresholds) {
-            t.draw(this);
+        for(Threshold threshold : thresholds) {
+            threshold.draw(this);
         }
         
         for(Tooltip tooltip : tooltips) {
@@ -179,38 +181,37 @@ public abstract class Chart {
     }
     
     
-    protected void drawAxis() {
-        
+    protected void drawAxisX() {
         fill(#DDDDDD); stroke(#DDDDDD); strokeWeight(1);
         textSize(9);
-        
-        if(min < 0 && max > 0) {
-            float pos0 = getPos(0);
-            line(TL.x, pos0, BR.x, pos0);
+        for(int i = 0; i < samples; i++) {
+            float x = lerp(TL.x, BR.x, (float) i / (samples- 1));
+            line(x, TL.y, x, BR.y);
+            textAlign(CENTER, TOP);
+            text(i, x, BR.y + 2);
+        }
+    }
+    
+    
+    protected void drawAxisY() {
+        fill(#DDDDDD); stroke(#DDDDDD); strokeWeight(1);
+        textSize(9);
+        int divs = 5;
+        for(int i = 0; i <= divs ; i++) {
+            float y = lerp(BR.y, TL.y, (float) i / divs );
+            line(TL.x, y, BR.x, y);
+            float value = map(y, BR.y, TL.y, min, max);
             textAlign(LEFT, BOTTOM);
-            text(0, TL.x + 2, pos0);
+            text(String.format("%." + decimals + "f", value), TL.x + 2, y);
         }
-        
-        if( showAxisX ) {
-            for(int i = 0; i < samples; i++) {
-                float x = lerp(TL.x, BR.x, (float) i / (samples- 1));
-                line(x, TL.y, x, BR.y);
-                textAlign(CENTER, TOP);
-                text(i, x, BR.y + 2);
-            }
-        }
-        
-        if( showAxisY ) {
-            int divs = 5;
-            for(int i = 0; i <= divs ; i++) {
-                float y = lerp(BR.y, TL.y, (float) i / divs );
-                line(TL.x, y, BR.x, y);
-                float value = map(y, BR.y, TL.y, min, max);
-                textAlign(LEFT, BOTTOM);
-                text(String.format("%." + decimals + "f", value), TL.x + 2, y);
-            }
-        }
-        
+    }
+    
+    
+    protected void drawAxis0(){
+        float pos0 = getPos(0);
+        line(TL.x, pos0, BR.x, pos0);
+        textAlign(LEFT, BOTTOM);
+        text(0, TL.x + 2, pos0);
     }
     
     
@@ -273,10 +274,107 @@ public class AreaChart extends Chart {
     }
     
     
-    public void drawPos(Set set, PVector prevPosStack, PVector posStack, PVector prevPos, PVector pos) {
+    protected void drawPos(Set set, PVector prevPosStack, PVector posStack, PVector prevPos, PVector pos) {
         
         fill(set.tint, 50); noStroke();
         if(prevPos != null && prevPosStack != null) {
+            
+            beginShape();
+            vertex(prevPosStack.x, prevPosStack.y);
+            vertex(prevPos.x, prevPos.y);
+            vertex(pos.x, pos.y);
+            vertex(posStack.x, posStack.y);
+            endShape(CLOSE);
+            
+            stroke(set.tint); strokeWeight(1);
+            line(prevPos.x, prevPos.y, pos.x, pos.y);
+        }
+        
+    }
+    
+}
+
+
+
+public class RadarChart extends Chart {
+
+    PVector center;
+    float R;
+    
+    public RadarChart(int TLx, int TLy, int width, int height) {
+        super(TLx, TLy, width, height);
+        center = new PVector(TLx, TLy).add(width/2, height/2);
+        R = min(BR.x - TL.x, BR.y - TL.y) / 2;
+    }
+    
+    
+    @Override
+    protected void drawAxisX() {
+        pushMatrix();
+        translate(center.x, center.y);
+        float angle = TWO_PI / samples;
+        for(int i = 0; i < samples; i++) {
+            noFill(); stroke(#DDDDDD); strokeWeight(1);
+            line(0, 0, 0, -R);
+            fill(#DDDDDD); textSize(9); textAlign(CENTER, CENTER);
+            text(i, 0, -R - 10);
+            rotate(angle);
+        }
+        popMatrix();
+    }
+    
+    
+    @Override
+    protected void drawAxisY() {
+        int divs = 5;
+        pushMatrix();
+        translate(center.x, center.y);
+        for(int i = 0; i <= divs ; i++) {
+            float y = lerp(0, R, (float) i / divs );
+            noFill(); stroke(#DDDDDD); strokeWeight(1); ellipseMode(RADIUS);
+            ellipse(0, 0, y, y);
+            float value = map(y, 0, R, min, max);
+            stroke(#DDDDDD); textSize(9); textAlign(LEFT, BOTTOM);
+            text(String.format("%." + decimals + "f", value), 2, -y);
+        }
+        popMatrix();
+    }
+    
+    
+    @Override
+    protected void drawAxis0() {
+        pushMatrix();
+        translate(center.x, center.y);
+        float y0 = map(0, min, max, 0, R);
+        stroke(#DDDDDD); strokeWeight(1); ellipseMode(RADIUS);
+        ellipse(0, 0, y0, y0);
+        textAlign(LEFT, BOTTOM); textSize(9);
+        text(0, 2, -y0);
+        popMatrix();
+    }
+    
+    
+    @Override
+    protected PVector getPos(int i, float value) {
+        return polar2cartesian(getPos(value), - HALF_PI + i * TWO_PI / samples).add(center);
+    }
+    
+    
+    @Override
+    protected float getPos(float value) {
+        return map(value, min, max, 0, R);
+    }
+    
+    
+    private PVector polar2cartesian(float R, float angle) {
+        return new PVector( R * cos(angle), R * sin(angle) );
+    }
+    
+    
+    protected void drawPos(Set set, PVector prevPosStack, PVector posStack, PVector prevPos, PVector pos) {
+        fill(set.tint, 50); noStroke();
+        if(prevPos != null && prevPosStack != null) {
+            
             
             beginShape();
             vertex(prevPosStack.x, prevPosStack.y);
@@ -288,10 +386,10 @@ public class AreaChart extends Chart {
             stroke(set.tint); strokeWeight(1);
             line(prevPos.x, prevPos.y, pos.x, pos.y);
         }
-        
     }
     
 }
+
 
 
 

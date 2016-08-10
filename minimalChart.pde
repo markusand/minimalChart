@@ -1,17 +1,19 @@
-Chart tempLines, tempArea;
-Set tempMin, tempMax; 
+Chart tempLines, tempArea, tempRadar;
+Set tempMin, tempMax, tempRandom; 
 
 void setup() {
 
-    size(500, 300, FX2D);
+    size(500, 500, FX2D);
     pixelDensity(2);
     
     tempMin = new Set("Tmin", "ºC", #3399FF);
     tempMax = new Set("Tmin", "ºC", #FF6655);
+    tempRandom = new Set("Trand", "ºC", #44FF55);
     
-    for(int i = 0; i < 20; i++) {
+    for(int i = 0; i < 10; i++) {
         tempMin.add( random(0, 15) );
         tempMax.add( random(15, 30) );
+        tempRandom.add( random(0, 10) );
     }
     
     
@@ -24,11 +26,17 @@ void setup() {
     tempArea.stacked(true);
     tempArea.decimals(1);
     
-    tempLines.threshold("Comfort", 10, 25, color(#FFB347, 100));
-    tempArea.threshold("Comfort", 10, 25, color(#FFB347, 100));
+    tempRadar = new RadarChart(25, 25, width-50, height-50);
+    tempRadar.showAxis(true, true);
+    tempRadar.decimals(2);
+    tempRadar.stacked(true);
+    
+    //tempLines.threshold("Comfort", 10, 25, color(#FFB347, 100));
+    //tempArea.threshold("Comfort", 10, 25, color(#FFB347, 100));
     
     tempLines.add(tempMin, tempMax);
-    tempArea.add(tempMin, tempMax);
+    tempArea.add(tempMax, tempRandom);
+    tempRadar.add(tempMin, tempRandom, tempMax);
     
 }
 
@@ -36,7 +44,8 @@ void draw() {
     
     background(255);
     
-    tempLines.draw();
-    tempArea.draw();
+    //tempLines.draw();
+    //tempArea.draw();
+    tempRadar.draw();
     
 }

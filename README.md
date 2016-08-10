@@ -1,5 +1,4 @@
 # minimalChart
->Because less is more
 
 Data visualization isn't always a complex task, with tons of customization options. Sometimes you only need a simple chart with a couple of lines.
 
@@ -32,7 +31,7 @@ temp.add(tMin, tMax);
 
 ## Features
 
-* Draw Dots, Lines and Area charts
+* Draw Dots, Lines, Area and Radar charts
 * Tooltips to visualize values
 * Draw threshold as line or area
 
@@ -58,7 +57,8 @@ Default: 0
 
 Set number of decimals to show in tooltips and axis
 
-#### threshold(String name, float min, float max [optional], color)
+#### threshold(name, min, max, color);
+Type: `String, float, float, color`  
 
 Add threshold to graph. It can be a line or an area
 
