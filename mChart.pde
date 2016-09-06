@@ -1,3 +1,23 @@
+/*
+ * minimalChart
+ * 
+ * Draw simple and minimalistic charts
+ *
+ * @author          Marc Vilella
+ *                  Observatori de la Sostenibilitat d'Andorra (OBSA)
+ *                  mvilella@obsa.ad
+ * @contributors    
+ * @copyright       Copyright (c) 2016 Marc Vilella
+ * @license         MIT License
+ * @required        
+ * @version         0.1
+ *
+ * @bugs            RADAR charts do not close and have not proper hover tooltips
+ *
+ * @todo            Add BAR and PIE charts
+*/
+
+
 public class Set {
 
     protected String name;
@@ -9,6 +29,12 @@ public class Set {
     protected float max = Float.MIN_VALUE;
     
     
+    /*
+    * Constructor for dataset
+    * @param name Name of dataset
+    * @param unit Unit for all values in dataset
+    * @param tint Color of dataset
+    */
     Set(String name, String unit, color tint) {
         this.name = name;
         this.unit = unit;
@@ -16,6 +42,10 @@ public class Set {
     }
     
     
+    /*
+    * Add new value in dataset, and update min/max boundaries
+    * @param values Value(s) to add in dataset
+    */
     public void add(float... values) {
         for(float value : values) {
             this.values.append(value);
@@ -25,13 +55,24 @@ public class Set {
     }
     
     
+    /*
+    * Get value from dataset
+    * @param i Index of value to get
+    * @return value from dataset in index, or 0 if index is outside
+    */
     public float value(int i) {
         if( i < values.size() ) return values.get(i);
         else return 0;
     }
     
     
-    public int size() { return values.size(); }
+    /*
+    * Get the size of the dataset values array
+    * @return size of dataset
+    */
+    public int size() {
+        return values.size();
+    }
     
     
 }
@@ -60,30 +101,75 @@ public abstract class Chart {
     protected ArrayList<Threshold> thresholds = new ArrayList<Threshold>();
     
     
+    /*
+    * Constructor for chart
+    * @param TLx x position of Top-Left corner
+    * @param TLy y position of Top-Left corner
+    * @param width Width of chart
+    * @param height Height of chart
+    */
     public Chart(int TLx, int TLy, int width, int height) {
         TL = new PVector(TLx, TLy);
         BR = new PVector(TLx + width, TLy + height);
     }
     
     
-    public void decimals(int i) { decimals = i; }
+    /*
+    * Set de number of decimals to display
+    * @param dec Number of decimals
+    */
+    public void decimals(int decimals) {
+        this.decimals = decimals;
+    }
     
-    public void stacked(boolean stacked) { this.stacked = stacked; }
-    public boolean isStacked() { return stacked; }
     
+    /*
+    * Set graph with stacked datasets
+    * @param stacked 
+    */
+    public void stacked(boolean stacked) {
+        this.stacked = stacked;
+    }
+    
+    
+    /*
+    * Set visibility of axis
+    * @param axisX Vertical axis
+    * @param axisY Horizontal axis
+    */
     public void showAxis(boolean axisX, boolean axisY) {
         showAxisX = axisX;
         showAxisY = axisY;
     }
     
+    
+    /*
+    * Add a threshold line in chart
+    * @param name Name of the threshold
+    * @param value Value to set the threshold
+    * @param tint Color of threshold line
+    */
     public void threshold(String name, float value, color tint) {
         threshold(name, value, value, tint);
     }
+    
+    
+    /*
+    * Add a threshold area in chart
+    * @param name Name of the threshold
+    * @param min Minimum value of threshold area
+    * @param max Maximum value of threshold area
+    * @param tint Color of threshold area
+    */
     public void threshold(String name, float min, float max, color tint) {
         thresholds.add( new Threshold(name, min, max, tint) );
     }
     
     
+    /*
+    * Set the chart to an initial "blank" state. Delete all existing
+    * datasets and initiate boundaries
+    */
     public void clear() {
         sets.clear();
         min = Float.MAX_VALUE;
@@ -92,6 +178,10 @@ public abstract class Chart {
     }
     
     
+    /*
+    * Add a dataset to chart, and update boundaries
+    * @param sets Set(s) to add to chart
+    */
     public void add(Set... sets) {
         for(Set set : sets) {
             this.sets.add(set);
@@ -101,6 +191,9 @@ public abstract class Chart {
     }
     
     
+    /*
+    * Calculate min and max boundaries in chart, and largest number of samples
+    */
     private void calcBounds() {
         for(Set set : sets) {
             if( set.min < min ) min = floor(set.min);
@@ -110,6 +203,9 @@ public abstract class Chart {
     }
     
     
+    /*
+    * Calculate min and max boundaries for stacked chart, and largest number of sample
+    */
     private void calcStackedBounds() {
         FloatList stack = new FloatList();
         for(Set set : sets) {
@@ -125,6 +221,9 @@ public abstract class Chart {
     }
     
     
+    /*
+    * Draw the chart
+    */
     public void draw() {
         
         ArrayList<Tooltip> tooltips = new ArrayList<Tooltip>();
@@ -176,11 +275,18 @@ public abstract class Chart {
     }
     
     
+    /*
+    * Detects if mouse is over the chart
+    * @return true if mouse over chart, false if not
+    */
     protected boolean inChartMouse() {
         return mouseX > TL.x && mouseX < BR.x && mouseY > TL.y && mouseY < BR.y;
     }
     
     
+    /*
+    * Draw vertical axis (one per sample)
+    */
     protected void drawAxisX() {
         fill(#DDDDDD); stroke(#DDDDDD); strokeWeight(1);
         textSize(9);
@@ -193,6 +299,9 @@ public abstract class Chart {
     }
     
     
+    /*
+    * Draw horizontal axis
+    */
     protected void drawAxisY() {
         fill(#DDDDDD); stroke(#DDDDDD); strokeWeight(1);
         textSize(9);
@@ -207,6 +316,9 @@ public abstract class Chart {
     }
     
     
+    /*
+    * Draw axis in 0 position
+    */
     protected void drawAxis0(){
         float pos0 = getPos(0);
         line(TL.x, pos0, BR.x, pos0);
@@ -215,16 +327,30 @@ public abstract class Chart {
     }
     
     
-    protected PVector getPos(int i, float value) {
+    /*
+    * Get screen position for a specific value inside the chart
+    * @param x x value
+    * @param y y value
+    * @return vector position
+    */
+    protected PVector getPos(int x, float y) {
         return new PVector(
-            map(i, 0, samples - 1, TL.x, BR.x),
-            getPos(value)
+            map(x, 0, samples - 1, TL.x, BR.x),
+            getPos(y)
         );
     }
     
-    protected float getPos(float value) {
-        return map(value, min, max, BR.y, TL.y);
+    
+    /*
+    * Get vertical position for a value
+    * @param y y value
+    * @return y position
+    */
+    protected float getPos(float y) {
+        return map(y, min, max, BR.y, TL.y);
     }
+    
+    
     
     protected abstract void drawPos(Set set, PVector prevPosStack, PVector posStack, PVector prevPos, PVector pos );
     
