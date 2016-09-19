@@ -1,7 +1,7 @@
 public class Set {
 
     private String name;
-    private String unit;
+    private String units;
     private color tint;
     
     private ArrayList<Datum> data = new ArrayList();
@@ -19,7 +19,7 @@ public class Set {
     */
     Set(String name, String units, color tint) {
         this.name = name;
-        this.unit = units;
+        this.units = units;
         this.tint = tint;
     }
     
@@ -137,6 +137,11 @@ public class Set {
     
     public color getColor() {
         return tint;
+    }
+    
+    
+    public String getUnits() {
+        return units;
     }
     
 }

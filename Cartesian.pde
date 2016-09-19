@@ -1,4 +1,34 @@
+public class Dots extends Chart {
+    
+    int dotSize = 5;
+    
+    Dots(int x, int y, int width, int height) {
+        super(x, y, width, height);
+    }
+    
+    
+    @Override  // Prevent making DOT chart stacked
+    public void stacked(boolean stacked) {}
+    
+    
+    protected void drawSet(FloatList stack, Set set) {
+        for(Datum d : set.getAll()) {
+            PVector pos = getPosition(d.getX(), d.getY());
+            boolean isClose = isClose( mousePos(), pos,  20, size.y);
+            if(isClose) tooltips.add(new Tooltip(tooltips, pos, String.format("%." + decimals + "f", d.getY()) + set.getUnits(), set.getColor()));
+            drawDot(pos, set.getColor(), 5);
+        }
+    }
+    
+}
+
+
+
+
 public class Lines extends Chart {
+    
+    int dotSize = 5;
+    int lineStroke = 1;
     
     Lines(int x, int y, int width, int height) {
         super(x, y, width, height);
@@ -8,20 +38,15 @@ public class Lines extends Chart {
         PVector prevPos = null;
         for(int i = 0; i < set.size(); i++) {
             Datum d = set.get(i);
-            Float stackValue = stack.size() > 0 ? stack.get(i) : minY.getY();
-            PVector pos = new PVector(
-                map(d.getX(), minX.getX(), maxX.getX(), 0, size.x),
-                map(stackValue + d.getY(), minY.getY(), maxY.getY(), size.y, 0)
-            );
-            
-            if(prevPos != null) {
-                stroke(set.getColor()); strokeWeight(1);
-                line(prevPos.x, prevPos.y, pos.x, pos.y);
-            }
-            fill(set.getColor()); noStroke();
-            ellipse(pos.x, pos.y, 5, 5);
-            prevPos = pos;
+            float stackValue = stack.size() > 0 ? stack.get(i) : 0;
+            PVector pos = getPosition(d.getX(), stackValue + d.getY());
+            boolean isClose = isClose( mousePos(), pos,  20, size.y);
+            if(isClose) tooltips.add(new Tooltip(tooltips, pos, String.format("%." + decimals + "f", d.getY()) + set.getUnits(), set.getColor()));
+            if(prevPos != null) drawLine(prevPos, pos, set.getColor(), 1);
+            drawDot(pos, set.getColor(), isClose ? 2 * dotSize : dotSize);
+            prevPos = new PVector(pos.x, pos.y);
         }
+        
     }
     
 }
@@ -30,29 +55,28 @@ public class Lines extends Chart {
 
 public class Area extends Chart {
     
+    int opacity = 70;
+    
     Area(int x, int y, int width, int height) {
         super(x, y, width, height);
     }
     
     protected void drawSet(FloatList stack, Set set) {
         PVector prevPos = null;
-        for(Datum d : set.getAll()) {
-            PVector pos = new PVector(
-                map(d.getX(), minX.getX(), maxX.getX(), 0, size.x),
-                map(d.getY(), minY.getY(), maxY.getY(), size.y, 0)
-            );
-            if(prevPos != null) {
-                beginShape();
-                    fill(set.getColor(), 100); noStroke();
-                    vertex(prevPos.x, size.y);
-                    vertex(prevPos.x, prevPos.y);
-                    vertex(pos.x, pos.y);
-                    vertex(pos.x, size.y);
-                endShape(CLOSE);
-                noFill(); stroke(set.getColor()); strokeWeight(1);
-                line(prevPos.x, prevPos.y, pos.x, pos.y);
+        PVector prevStack = null;
+        for(int i = 0; i < set.size(); i++) {
+            Datum d = set.get(i);
+            float stackValue = stack.size() > 0 ? stack.get(i) : minY.getY();
+            PVector stackPos = getPosition(d.getX(), stackValue);
+            PVector pos = getPosition(d.getX(), stackValue + d.getY());
+            boolean isClose = isClose( mousePos(), pos,  20, size.y);
+            if(isClose) tooltips.add(new Tooltip(tooltips, pos, String.format("%." + decimals + "f", d.getY()) + set.getUnits(), set.getColor()));
+            if(prevPos != null && prevStack != null) {
+                drawArea(prevStack, prevPos, pos, stackPos, color(set.getColor(), opacity));
+                drawLine(prevPos, pos, set.getColor(), 1);
             }
             prevPos = pos;
+            prevStack = stackPos;
         }
     }
     
