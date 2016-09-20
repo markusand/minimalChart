@@ -22,6 +22,8 @@ public abstract class Chart {
 
     protected PVector TL;
     protected PVector size;
+    protected PVector plotMin;
+    protected PVector plotMax;
     
     protected int margin = 0;
     
@@ -49,6 +51,8 @@ public abstract class Chart {
     public Chart(int TLx, int TLy, int width, int height) {
         TL = new PVector(TLx, TLy);
         size = new PVector(width, height);
+        plotMin = new PVector(0, size.y);
+        plotMax = new PVector(size.x, 0);
     }
     
     
@@ -158,8 +162,8 @@ public abstract class Chart {
     // @param y  y value
     protected PVector getPosition(int x, float y) {
         return new PVector(
-            map(x, minX.getX(), maxX.getX(), 0, size.x),
-            map(y, minY.getY(), maxY.getY(), size.y, 0)
+            map(x, minX.getX(), maxX.getX(), plotMin.x, plotMax.x),
+            map(y, minY.getY(), maxY.getY(), plotMin.y, plotMax.y)
         );
     } 
     
@@ -211,14 +215,11 @@ public abstract class Chart {
         if( !inChart(point) ) return false;
         return abs( point.x - ref.x ) <= dx && abs( point.y - ref.y ) <= dy;
     }
-    
-    
-    
          
-         
-    protected void drawDot(PVector pos, color tint, int size) {
+    protected void drawDot(PVector pos, color tint, int size) { drawDot(pos.x, pos.y, tint, size); }
+    protected void drawDot(float x, float y, color tint, int size) {
         fill(tint); noStroke();
-        ellipse(pos.x, pos.y, size, size);
+        ellipse(x, y, size, size);
     }     
          
     protected void drawLine(PVector from, PVector to, color tint, int weight) {

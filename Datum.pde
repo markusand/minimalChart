@@ -4,6 +4,10 @@ public class Datum {
     private float y;
     private String label;
     
+    Datum(int y, String label) {
+        this(0, y, label);
+    }
+    
     Datum(int x, float y) {
         this(x, y, null);
     }

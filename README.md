@@ -18,6 +18,7 @@ Set tMin = new Set("Tmin", "ºC", #3399FF);
 Set tMax = new Set("Tmax", "ºC", #FF6655);
 
 Datum tNow = new Datum(tMax.size(), 23, "15h30");
+Datum hotDaysNOV = new Datum(5, "NOV");  // Used only for PIE and DONUT charts
 
 tMin.add( new Datum(tMin.size(), 19, "15h30") );
 tMax.add(tNow);
@@ -33,7 +34,7 @@ temp.add(tMin, tMax);
 
 ## Features
 
-* Draw Dots, Lines and Area charts
+* Draw Dots, Lines, Area, Pie and Donut charts
 * Tooltips to visualize values
 * Draw threshold as line or area
 
