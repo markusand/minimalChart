@@ -120,7 +120,7 @@ public abstract class Chart {
     
     
     // Calculate min and max boundaries for stacked chart, and largest number of sample
-    private void calcStackedBounds() {
+    protected void calcStackedBounds() {
         float[] stack = new float[ maxX.getX() - minX.getX() + 1 ];
         for(Set set : sets) {
             for(Datum datum : set.getAll()) {
