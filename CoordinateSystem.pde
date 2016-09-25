@@ -5,14 +5,11 @@ public static class CoordinateSystem {
     }
     
     protected static PVector toPolar(PVector point) {
-        float R = point.mag();
-        return new PVector(R, atan2(point.y, point.x));
+        return new PVector(point.mag(), atan2(point.y, point.x));
     }
     
     protected static PVector toPolarUnsigned(PVector point) {
-        PVector polarPoint = toPolar(point);
-        polarPoint.y = (polarPoint.y + TWO_PI) % TWO_PI;
-        return polarPoint;
+        return new PVector(point.mag(), (atan2(point.y, point.x) + TWO_PI) % TWO_PI );
     }
     
 }
