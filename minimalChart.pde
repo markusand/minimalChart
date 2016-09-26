@@ -6,13 +6,16 @@ void setup() {
     pixelDensity(2);
     
     
+    String[] months = new String[] { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
+    
+    
     Set tempMin = new Set("Tmin", "ºC", #3399FF);
     Set tempMax = new Set("Tmin", "ºC", #FF6655);
     Set tempRandom = new Set("Trand", "ºC", #44FF55);
-    for(int i = 0; i < 10; i++) {
-        tempMin.add( new Datum(i, random(0, 10), "Min"+i) );
-        tempMax.add( new Datum(i, random(10, 20), "Max"+i) );
-        tempRandom.add( new Datum(i, random(0, 20), "Rand"+i) );
+    for(int i = 0; i < 12; i++) {
+        tempMin.add( new Datum(i, random(0, 10), months[i]) );
+        tempMax.add( new Datum(i, random(10, 20), months[i]) );
+        tempRandom.add( new Datum(i, random(0, 20), months[i]) );
     }
     
     tempLines = new Lines(25, 25, 450, 100);

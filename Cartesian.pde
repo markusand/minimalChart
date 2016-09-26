@@ -8,11 +8,22 @@ protected abstract class Cartesian extends Chart {
     
     
     protected void drawAxis(boolean x, boolean y) {
-        for(int i = minX.getX(); i <= maxX.getX(); i++) {
-            PVector axisBottom = getPosition(i, minY.getY());
-            PVector axisTop = getPosition(i, maxY.getY());
-            drawLine(axisBottom, axisTop, #DDDDDD, 1);
+        
+        if(x) {  
+            for(int i = minX.x; i <= maxX.x; i++) {
+                PVector axisBottom = getPosition(i, minY.y);
+                PVector axisTop = getPosition(i, maxY.y);
+                drawLine(axisBottom, axisTop, #DDDDDD, 1);
+                
+                fill(#DDDDDD); textSize(9); textAlign(CENTER, TOP);
+                if( labels.containsKey(i) ) {
+                    if(i == minX.x) textAlign(LEFT, TOP);
+                    else if(i == maxX.x) textAlign(RIGHT, TOP);
+                    text(labels.get(i), axisBottom.x, axisBottom.y + 2);
+                }
+            }
         }
+        
     }
     
 }
@@ -34,13 +45,13 @@ public class Scatter extends Cartesian {
     
     
     protected void drawSet(FloatList stack, Set set) {
-        for(Datum d : set.getAll()) {
-            PVector pos = getPosition(d.getX(), d.getY());
+        for(Datum d : set.data()) {
+            PVector pos = getPosition(d.x, d.y);
             
             boolean isClose = isClose( mousePos(), pos,  20, size.y);
-            if(isClose) tooltips.add(new Tooltip(tooltips, pos, String.format("%." + decimals + "f", d.getY()) + set.getUnits(), set.getColor()));
+            if(isClose) tooltips.add(new Tooltip(tooltips, pos, String.format("%." + decimals + "f", d.y) + set.units, set.tint));
             
-            drawDot(pos, set.getColor(), 5);
+            drawDot(pos, set.tint, 5);
         }
     }
     
@@ -64,13 +75,13 @@ public class Lines extends Cartesian {
             Datum d = set.get(i);
             
             float stackValue = stack.size() > 0 ? stack.get(i) : 0;
-            PVector pos = getPosition(d.getX(), stackValue + d.getY());
+            PVector pos = getPosition(d.x, stackValue + d.y);
             
             boolean isClose = isClose( mousePos(), pos,  20, size.y);
-            if(isClose) tooltips.add(new Tooltip(tooltips, pos, String.format("%." + decimals + "f", d.getY()) + set.getUnits(), set.getColor()));
+            if(isClose) tooltips.add(new Tooltip(tooltips, pos, String.format("%." + decimals + "f", d.y) + set.units, set.tint));
             
-            if(prevPos != null) drawLine(prevPos, pos, set.getColor(), 1);
-            drawDot(pos, set.getColor(), isClose ? 2 * dotSize : dotSize);
+            if(prevPos != null) drawLine(prevPos, pos, set.tint, 1);
+            drawDot(pos, set.tint, isClose ? 2 * dotSize : dotSize);
             
             prevPos = new PVector(pos.x, pos.y);
         }
@@ -97,16 +108,16 @@ public class Area extends Cartesian {
         for(int i = 0; i < set.size(); i++) {
             Datum d = set.get(i);
             
-            float stackValue = stack.size() > 0 ? stack.get(i) : minY.getY();
-            PVector stackPos = getPosition(d.getX(), stackValue);
-            PVector pos = getPosition(d.getX(), stackValue + d.getY());
+            float stackValue = stack.size() > 0 ? stack.get(i) : minY.y;
+            PVector stackPos = getPosition(d.x, stackValue);
+            PVector pos = getPosition(d.x, stackValue + d.y);
             
             boolean isClose = isClose( mousePos(), pos,  20, size.y);
-            if(isClose) tooltips.add(new Tooltip(tooltips, pos, String.format("%." + decimals + "f", d.getY()) + set.getUnits(), set.getColor()));
+            if(isClose) tooltips.add(new Tooltip(tooltips, pos, String.format("%." + decimals + "f", d.y) + set.units, set.tint));
             
             if(prevPos != null && prevStack != null) {
-                drawArea(prevStack, prevPos, pos, stackPos, color(set.getColor(), opacity));
-                drawLine(prevPos, pos, set.getColor(), 1);
+                drawArea(prevStack, prevPos, pos, stackPos, color(set.tint, opacity));
+                drawLine(prevPos, pos, set.tint, 1);
             }
             
             prevPos = pos;

@@ -20,13 +20,13 @@ protected class Threshold {
     }
     
     protected void draw() {
-        if(max >= chart.minY.getY() && min <= chart.maxY.getY()) {
-            PVector minPos = chart.getPosition(0, min > chart.minY.getY() ? min : chart.minY.getY());
+        if(max >= chart.minY.y && min <= chart.maxY.y) {
+            PVector minPos = chart.getPosition(0, min > chart.minY.y ? min : chart.minY.y);
             if( min == max ) {
                 stroke(tint); strokeWeight(1);
                 line(0, minPos.y, chart.size.x, minPos.y);
             } else {
-                PVector maxPos = chart.getPosition(chart.maxX.x, max < chart.maxY.getY() ? max : chart.maxY.getY());
+                PVector maxPos = chart.getPosition(chart.maxX.x, max < chart.maxY.y ? max : chart.maxY.y);
                 fill(tint, 70); noStroke(); rectMode(CORNERS);
                 rect(minPos.x, minPos.y, maxPos.x, maxPos.y);
             }

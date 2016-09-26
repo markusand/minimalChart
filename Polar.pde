@@ -19,8 +19,8 @@ public class Radar extends Chart {
     @Override
     protected PVector getPosition(int x, float y) {
         return new PVector(
-            map(x, minX.getX(), maxX.getX()+1, plotMin.x, plotMax.x),
-            map(y, 0, maxY.getY(), plotMin.y, plotMax.y)
+            map(x, minX.x, maxX.x+1, plotMin.x, plotMax.x),
+            map(y, 0, maxY.y, plotMin.y, plotMax.y)
         );
     }
     
@@ -30,7 +30,7 @@ public class Radar extends Chart {
         translate(center.x, center.y);
         rotate(-HALF_PI);
         noFill(); stroke(#DDDDDD); strokeWeight(1);
-        int vertices = maxX.getX() - minX.getX();
+        int vertices = maxX.x - minX.x;
         for(int i = 0; i <= 4; i++) {
             polygon(0, 0, i * R / 4, vertices);
         }
@@ -44,12 +44,12 @@ public class Radar extends Chart {
         pushMatrix();
         translate(center.x, center.y);
         rotate(-HALF_PI);
-        fill(set.getColor(), 70); stroke(set.getColor()); strokeWeight(1);
+        fill(set.tint, 70); stroke(set.tint); strokeWeight(1);
         beginShape();
             for(int i=0; i < set.size(); i++) {
                 Datum d = set.get(i);
                 float stackValue = stack.size() > 0 ? stack.get(i) : 0;
-                PVector polarPos = getPosition(d.getX(), stackValue + d.getY());
+                PVector polarPos = getPosition(d.x, stackValue + d.y);
                 PVector pos = CoordinateSystem.toCartesian(polarPos.y, polarPos.x);
                 vertex(pos.x, pos.y);
             }
@@ -103,8 +103,8 @@ public class Pie extends Chart {
         float sum = 0;
         int amount = 0;
         for(Set set : sets) {
-            for(Datum datum : set.getAll()) {
-                sum += datum.getY();
+            for(Datum datum : set.data()) {
+                sum += datum.y;
                 amount++;
             }
         }
@@ -129,16 +129,16 @@ public class Pie extends Chart {
         for(int i = 0; i < stack.size(); i++) total += stack.get(i);
         
         float prevAngle = stack.size() > 0 ? getPosition(0, total).y : 0;
-        for(Datum d : set.getAll()) {
+        for(Datum d : set.data()) {
             
-            float angle = getPosition(0, d.getY()).y;
+            float angle = getPosition(0, d.y).y;
             
             PVector polarMouse = CoordinateSystem.toPolarUnsigned( mousePos().sub(center) );
             float dx = (R-r) / 2;
             boolean isClose = isClose( polarMouse, new PVector(r + dx, prevAngle + angle / 2), dx, angle / 2);
-            if(isClose) tooltips.add(new Tooltip(tooltips, mousePos(), d.getLabel() + " " + String.format("%." + decimals + "f", d.getY()) + set.getUnits(), set.getColor()));
+            if(isClose) tooltips.add(new Tooltip(tooltips, mousePos(), d.label + " " + String.format("%." + decimals + "f", d.y) + set.units, set.tint));
             
-            fill(set.getColor(), isClose ? 255 : 200); noStroke();
+            fill(set.tint, isClose ? 255 : 200); noStroke();
             arc(0, 0, 2*R, 2*R, prevAngle, prevAngle + angle, PIE);
             drawDot(0, 0, #FFFFFF, int(2*r));
             

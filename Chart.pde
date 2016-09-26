@@ -18,6 +18,9 @@
 */
 
 
+import java.util.Map.Entry;
+
+
 public abstract class Chart {
 
     protected PVector TL;
@@ -33,7 +36,8 @@ public abstract class Chart {
     
     protected boolean stacked = false;
     
-    protected ArrayList<Set> sets = new ArrayList();   
+    protected ArrayList<Set> sets = new ArrayList();  
+    protected HashMap<Integer, String> labels = new HashMap();
     protected Datum minY = null;
     protected Datum maxY = null;
     protected Datum minX = null;
@@ -74,6 +78,9 @@ public abstract class Chart {
     public void showAxis(boolean axisX, boolean axisY) {
         showAxisX = axisX;
         showAxisY = axisY;
+        // Padding for labels
+        if(showAxisX) plotMin.y -= 15;
+        else plotMin.y = size.y;
     }
     
     
@@ -100,6 +107,7 @@ public abstract class Chart {
     public void clear() {
         sets.clear();
         minX = maxX = minY = maxY = null;
+        labels = new HashMap();
     }
     
     
@@ -110,11 +118,19 @@ public abstract class Chart {
             this.sets.add(set);
             if( !set.isEmpty() ) {
                 if( !stacked ) {
-                    if( minY == null || set.getMin().getY() < minY.getY() ) minY = set.getMin();
-                    if( maxY == null || set.getMax().getY() > maxY.getY() ) maxY = set.getMax();
+                    if( minY == null || set.min().y < minY.y ) minY = set.min();
+                    if( maxY == null || set.max().y > maxY.y ) maxY = set.max();
                 }
-                if( minX == null || set.getFirst().getX() < minX.getX() ) minX = set.get(0);
-                if( maxX == null || set.getLast().getX() > maxX.getX() ) maxX = set.getLast();
+                if( minX == null || set.first().x < minX.x ) minX = set.first();
+                if( maxX == null || set.last().x > maxX.x ) maxX = set.last();
+                
+                for(Entry l : set.getLabels().entrySet()) {
+                    int x = (int) l.getKey();
+                    String label = (String) l.getValue();
+                    if( !labels.containsKey(x) ) labels.put(x, label);
+                    else if( !labels.get(x).equals(label) ) labels.put(x, labels.get(x) + "\n" + label); 
+                }
+                
             }
         }
         if( stacked ) calcStackedBounds();
@@ -123,15 +139,15 @@ public abstract class Chart {
     
     // Calculate min and max boundaries for stacked chart, and largest number of sample
     protected void calcStackedBounds() {
-        float[] stack = new float[ maxX.getX() - minX.getX() + 1 ];
+        float[] stack = new float[ maxX.x - minX.x + 1 ];
         for(Set set : sets) {
-            for(Datum datum : set.getAll()) {
-                stack[ datum.getX() - minX.getX() ] += datum.getY();
+            for(Datum datum : set.data()) {
+                stack[ datum.x - minX.x ] += datum.y;
             }
         }
         minY = new Datum(0, 0, "MIN" );
         for(int i = 0; i < stack.length; i++) {
-            if( maxY == null || stack[i] > maxY.getY() ) maxY = new Datum( i + minX.getX(), stack[i], "MAX" );
+            if( maxY == null || stack[i] > maxY.y ) maxY = new Datum( i + minX.x, stack[i], "MAX" );
         }
     }
     
@@ -140,16 +156,21 @@ public abstract class Chart {
     public void draw() {
         FloatList stack = new FloatList();
         tooltips = new ArrayList();
+        
         pushStyle();
         pushMatrix();
         translate(TL.x, TL.y);
+        
         drawAxis(showAxisX, showAxisY);
+        
         for(Set set : sets) {
             drawSet(stack, set);
             if(stacked) stack = updateStack(stack, set);
         }
+        
         for(Threshold threshold : thresholds) threshold.draw();
         for(Tooltip tooltip : tooltips) tooltip.draw();
+        
         popMatrix();
         popStyle();
     }
@@ -160,8 +181,8 @@ public abstract class Chart {
     // @param y  y value
     protected PVector getPosition(int x, float y) {
         return new PVector(
-            map(x, minX.getX(), maxX.getX(), plotMin.x, plotMax.x),
-            map(y, minY.getY(), maxY.getY(), plotMin.y, plotMax.y)
+            map(x, minX.x, maxX.x, plotMin.x, plotMax.x),
+            map(y, minY.y, maxY.y, plotMin.y, plotMax.y)
         );
     } 
     
@@ -171,9 +192,9 @@ public abstract class Chart {
     // @param set  Set with values to add
     // @return updated stack with added set values
     private FloatList updateStack(FloatList stack, Set set) {
-        for(Datum d : set.getAll()) {
-            while( stack.size() <= d.getX() ) stack.append( minY.getY() );
-            stack.add(d.getX(), d.getY());
+        for(Datum d : set.data()) {
+            while( stack.size() <= d.x ) stack.append( minY.y );
+            stack.add(d.x, d.y);
         }
         return stack;
     }

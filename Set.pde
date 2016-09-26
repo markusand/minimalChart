@@ -1,8 +1,8 @@
 public class Set {
 
-    private String name;
-    private String units;
-    private color tint;
+    public String name;
+    public String units;
+    public color tint;
     
     private ArrayList<Datum> data = new ArrayList();
     private Datum minX = null;
@@ -39,10 +39,10 @@ public class Set {
     public void add(Datum... newData) {
         for(Datum d : newData) {
             this.data.add(d);
-            if( minY == null || d.getY() < minY.getY() ) minY = d;
-            if( maxY == null || d.getY() > maxY.getY() ) maxY = d;
-            if( minX == null || d.getX() < minX.getX() ) minX = d;
-            if( maxX == null || d.getX() > maxX.getX() ) maxX = d;
+            if( minY == null || d.y < minY.y ) minY = d;
+            if( maxY == null || d.y > maxY.y ) maxY = d;
+            if( minX == null || d.x < minX.x ) minX = d;
+            if( maxX == null || d.x > maxX.x ) maxX = d;
         }
     }
     
@@ -51,7 +51,7 @@ public class Set {
     * Get minimum Datum in set
     * @return value from dataset in index, or 0 if index is outside
     */
-    public Datum getMin() {
+    public Datum min() {
         return minY;
     }
     
@@ -61,7 +61,7 @@ public class Set {
     * @param i Index of value to get
     * @return value from dataset in index, or 0 if index is outside
     */
-    public Datum getMax() {
+    public Datum max() {
         return maxY;
     }
     
@@ -73,7 +73,7 @@ public class Set {
     */
     public Datum getData(int x) {
         for(Datum d : data) {
-            if( d.getX() == x ) return d;
+            if( d.x == x ) return d;
         }
         return null;
     }
@@ -94,7 +94,7 @@ public class Set {
     * @param i index
     * @return datum from dataset in i index, null if index out of bounds
     */
-    public ArrayList<Datum> getAll() {
+    public ArrayList<Datum> data() {
         return data;
     }
     
@@ -103,7 +103,7 @@ public class Set {
     * Get first datum in dataset 
     * @return first datum
     */
-    public Datum getFirst() {
+    public Datum first() {
         return minX;
     }
     
@@ -112,7 +112,7 @@ public class Set {
     * Get last datum in dataset 
     * @return last datum
     */
-    public Datum getLast() {
+    public Datum last() {
         return maxX;
     }
     
@@ -135,13 +135,13 @@ public class Set {
     }
     
     
-    public color getColor() {
-        return tint;
-    }
-    
-    
-    public String getUnits() {
-        return units;
+    public HashMap<Integer, String> getLabels() {
+        HashMap<Integer, String> labels = new HashMap();
+        for(Datum d : data) {
+            if( !labels.containsKey(d.x) ) labels.put(d.x, d.label);
+            else if( !labels.get(d.x).equals(d.label) ) labels.put(d.x, labels.get(d.x) + "\n" + d.label );
+        }
+        return labels;
     }
     
 }
