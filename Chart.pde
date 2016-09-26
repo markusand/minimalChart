@@ -51,8 +51,6 @@ public abstract class Chart {
     public Chart(int TLx, int TLy, int width, int height) {
         TL = new PVector(TLx, TLy);
         size = new PVector(width, height);
-        plotMin = new PVector(0, size.y);
-        plotMax = new PVector(size.x, 0);
     }
     
     
@@ -184,13 +182,7 @@ public abstract class Chart {
     // Draw axis if required
     // @param x  Draw x axis if true
     // @param y  Draw y axis if true
-    protected void drawAxis(boolean x, boolean y) {
-        for(int i = minX.getX(); i <= maxX.getX(); i++) {
-            PVector axisBottom = getPosition(i, minY.getY());
-            PVector axisTop = getPosition(i, maxY.getY());
-            drawLine(axisBottom, axisTop, #DDDDDD, 1);
-        }
-    }
+    protected abstract void drawAxis(boolean x, boolean y);
     
     
     // Draw set
@@ -207,15 +199,26 @@ public abstract class Chart {
     }
     
     
+    // Get mouse position over chart (correcting translate)
+    // @return x,y position of mouse
     protected PVector mousePos() {
         return new PVector(mouseX, mouseY).sub(TL.x, TL.y);
     }
     
+    
+    // Check if a point is inbetween a deviation from a reference point
+    // @param point  Point to check
+    // @param ref  Reference point to check
+    // @param dx  Deviation in x-axis
+    // @param dy  Deviation in y-axis
+    // @return true if point is inbetween, false if not
     protected boolean isClose(PVector point, PVector ref, float dx, float dy) {
         if( !inChart(point) ) return false;
         return abs( point.x - ref.x ) <= dx && abs( point.y - ref.y ) <= dy;
     }
-         
+    
+    
+    
     protected void drawDot(PVector pos, color tint, int size) { drawDot(pos.x, pos.y, tint, size); }
     protected void drawDot(float x, float y, color tint, int size) {
         fill(tint); noStroke();

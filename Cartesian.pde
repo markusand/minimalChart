@@ -1,8 +1,30 @@
-public class Dots extends Chart {
+protected abstract class Cartesian extends Chart {
+    
+    Cartesian(int TLx, int TLy, int width, int height) {
+        super(TLx, TLy, width, height);
+        plotMin = new PVector(0, size.y);
+        plotMax = new PVector(size.x, 0);
+    }
+    
+    
+    protected void drawAxis(boolean x, boolean y) {
+        for(int i = minX.getX(); i <= maxX.getX(); i++) {
+            PVector axisBottom = getPosition(i, minY.getY());
+            PVector axisTop = getPosition(i, maxY.getY());
+            drawLine(axisBottom, axisTop, #DDDDDD, 1);
+        }
+    }
+    
+}
+
+
+
+
+public class Scatter extends Cartesian {
     
     int dotSize = 5;
     
-    Dots(int x, int y, int width, int height) {
+    Scatter(int x, int y, int width, int height) {
         super(x, y, width, height);
     }
     
@@ -27,7 +49,7 @@ public class Dots extends Chart {
 
 
 
-public class Lines extends Chart {
+public class Lines extends Cartesian {
     
     int dotSize = 5;
     int lineStroke = 1;
@@ -59,7 +81,8 @@ public class Lines extends Chart {
 
 
 
-public class Area extends Chart {
+
+public class Area extends Cartesian {
     
     int opacity = 70;
     
