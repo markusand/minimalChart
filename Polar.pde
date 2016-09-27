@@ -16,7 +16,7 @@ public class Radar extends Chart {
     public void stacked(boolean stacked) {}
     
     
-    @Override
+    @Override // Center (minY) to 0
     protected PVector getPosition(int x, float y) {
         return new PVector(
             map(x, minX.x, maxX.x+1, plotMin.x, plotMax.x),
@@ -28,15 +28,34 @@ public class Radar extends Chart {
     protected void drawAxis(boolean x, boolean y) {
         pushMatrix();
         translate(center.x, center.y);
+        
+        for(int i = minX.x; i <= maxX.x; i++) {
+            PVector polarVertex = getPosition(i, maxY.y);
+            PVector vertex = CoordinateSystem.toCartesian(polarVertex.y, -HALF_PI + polarVertex.x);
+            fill(#DDDDDD); textSize(9); textAlign(CENTER, CENTER);
+            if( labels.containsKey(i) ) {
+                textAlignPolar(polarVertex.x);
+                text(labels.get(i), vertex.x, vertex.y);
+            }
+        }
+        
         rotate(-HALF_PI);
         noFill(); stroke(#DDDDDD); strokeWeight(1);
+        
         int vertices = maxX.x - minX.x;
         for(int i = 0; i <= 4; i++) {
             polygon(0, 0, i * R / 4, vertices);
         }
         
-        
         popMatrix();
+        
+    }
+    
+    
+    private void textAlignPolar(float angle) {
+        int h = angle == 0 || angle == PI ? CENTER : angle < PI ? LEFT : RIGHT;
+        int v = angle == HALF_PI || angle == 3 * HALF_PI ? CENTER : angle < HALF_PI || angle > 3 * HALF_PI ? BOTTOM : TOP;
+        textAlign(h, v);
     }
     
     
@@ -44,16 +63,17 @@ public class Radar extends Chart {
         pushMatrix();
         translate(center.x, center.y);
         rotate(-HALF_PI);
+        
         fill(set.tint, 70); stroke(set.tint); strokeWeight(1);
         beginShape();
-            for(int i=0; i < set.size(); i++) {
-                Datum d = set.get(i);
-                float stackValue = stack.size() > 0 ? stack.get(i) : 0;
-                PVector polarPos = getPosition(d.x, stackValue + d.y);
-                PVector pos = CoordinateSystem.toCartesian(polarPos.y, polarPos.x);
-                vertex(pos.x, pos.y);
-            }
+        for(int i=0; i < set.size(); i++) {
+            Datum d = set.get(i);
+            PVector polarPos = getPosition(d.x, d.y);
+            PVector pos = CoordinateSystem.toCartesian(polarPos.y, polarPos.x);
+            vertex(pos.x, pos.y);
+        }
         endShape(CLOSE);
+        
         popMatrix();
     }
     
@@ -61,12 +81,12 @@ public class Radar extends Chart {
     private void polygon(int x, int y, float R, int vertices) {
         float angle = TWO_PI / (vertices + 1);
         beginShape(TRIANGLE_FAN);
-            vertex(x, y);
-            for(float a = 0; a < TWO_PI; a += angle) {
-                PVector vertex = CoordinateSystem.toCartesian(R, a).add(x, y);
-                vertex(vertex.x, vertex.y);
-            }
-            vertex(y + R, x);
+        vertex(x, y);
+        for(float a = 0; a < TWO_PI; a += angle) {
+            PVector vertex = CoordinateSystem.toCartesian(R, a).add(x, y);
+            vertex(vertex.x, vertex.y);
+        }
+        vertex(y + R, x);
         endShape();
     }
     

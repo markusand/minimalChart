@@ -7,7 +7,7 @@ void setup() {
     
     
     String[] months = new String[] { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
-    
+    String[] habs = new String[] { "FISICO", "PASE", "DEFENSA", "VELOCIDAD", "DRIBLAJE", "LIDERAZGO", "TACTICA", "TEATRO" };
     
     Set tempMin = new Set("Tmin", "ºC", #3399FF);
     Set tempMax = new Set("Tmin", "ºC", #FF6655);
@@ -34,9 +34,9 @@ void setup() {
     
     Set pMessi = new Set("Messi", "%", #3399FF);
     Set pCristiano = new Set("Cristiano", "%", #FF6655);
-    for(int i = 0; i < 5; i++) {
-        pMessi.add( new Datum(i, random(10, 100), "Points "+i) );
-        pCristiano.add( new Datum(i, random(10, 100), "Points "+i) );
+    for(int i = 0; i < 7; i++) {
+        pMessi.add( new Datum(i, random(50, 100), habs[i % habs.length]) );
+        pCristiano.add( new Datum(i, random(50, 100), habs[i % habs.length]) );
     }
     
     tempRadar = new Radar(25, 300, 175, 175);
