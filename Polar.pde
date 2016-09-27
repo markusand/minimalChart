@@ -59,6 +59,12 @@ public class Radar extends Chart {
     }
     
     
+    @Override
+    protected boolean isClose(PVector point, PVector ref, float dx, float dy) {
+        return point.mag() < dx && PVector.angleBetween(ref, point) < dy;
+    }
+    
+    
     protected void drawSet(FloatList stack, Set set) {
         pushMatrix();
         translate(center.x, center.y);
@@ -70,7 +76,18 @@ public class Radar extends Chart {
             Datum d = set.get(i);
             PVector polarPos = getPosition(d.x, d.y);
             PVector pos = CoordinateSystem.toCartesian(polarPos.y, polarPos.x);
+            
+            PVector mousePos = mousePos().sub(center).rotate(HALF_PI);
+            boolean isClose = isClose(mousePos, pos, R, PI / set.size() );
+            
             vertex(pos.x, pos.y);
+            if(isClose) tooltips.add( new Tooltip(
+                tooltips,
+                pos.rotate(-HALF_PI).add(center),
+                d.label + " " + String.format("%." + decimals + "f", d.y) + set.units,
+                set.tint
+            ));
+            
         }
         endShape(CLOSE);
         
