@@ -115,8 +115,8 @@ public abstract class Chart {
     // @param sets  Set(s) to add to chart
     public void add(Set... newSets) {
         for(Set set : newSets) {
-            this.sets.add(set);
             if( !set.isEmpty() ) {
+                sets.add(set);
                 if( !stacked ) {
                     if( minY == null || set.min().y < minY.y ) minY = set.min();
                     if( maxY == null || set.max().y > maxY.y ) maxY = set.max();
@@ -133,12 +133,13 @@ public abstract class Chart {
                 
             }
         }
-        if( stacked ) calcStackedBounds();
+        if(stacked) calcStackedBounds();
     }
     
     
     // Calculate min and max boundaries for stacked chart, and largest number of sample
     protected void calcStackedBounds() {
+        if( maxX == null || minX == null) return;
         float[] stack = new float[ maxX.x - minX.x + 1 ];
         for(Set set : sets) {
             for(Datum datum : set.data()) {
@@ -154,6 +155,10 @@ public abstract class Chart {
     
     // Draw Chart
     public void draw() {
+        
+        if(minX == null || maxX == null || minY == null || maxY == null) return;
+        if(minX.x >= maxX.x || minY.y >= maxY.y) return;
+        
         FloatList stack = new FloatList();
         tooltips = new ArrayList();
         
