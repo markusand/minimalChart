@@ -19,7 +19,7 @@ public class Datum {
     }
    
     public String toString() {
-        return "DATUM: { x: " + x + ", y: " + y + ", label: " + label + " }";
+        return "datum: { x: " + x + ", y: " + y + ", label: " + label + " }";
     }
     
 }

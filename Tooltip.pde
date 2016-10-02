@@ -22,9 +22,9 @@ private class Tooltip {
     
     public void draw() {
         fill(tint); noStroke(); rectMode(CENTER);
-        rect(pos.x, pos.y, textWidth(label) + 15, 20, 3);
+        rect(pos.x, pos.y, textWidth(label) + 10, 20, 3);
         fill(#FFFFFF); textAlign(CENTER, CENTER); textSize(9);
-        text(label, pos.x, pos.y - 1);
+        text(label, pos.x, pos.y - 2);
     }
     
     
