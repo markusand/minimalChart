@@ -1,9 +1,9 @@
-public class Radar extends Chart {
-
-    float R;
-    PVector center;
+protected abstract class Polar extends Chart {
     
-    Radar(int TLx, int TLy, int width, int height) {
+    protected PVector center;
+    protected float R;
+
+    protected Polar(int TLx, int TLy, int width, int height) {
         super(TLx, TLy, width, height);
         center = new PVector(width / 2, height / 2);
         R = min(center.x, center.y);
@@ -12,8 +12,32 @@ public class Radar extends Chart {
     }
     
     
-    @Override  // Prevent to make Radar chart stacked
-    public void stacked(boolean stacked) {}
+    @Override  // Prevent to change stacked option
+    public Chart stacked(boolean stacked) { return this; }
+    
+    
+    @Override
+    protected boolean isClose(PVector point, PVector ref, float dx, float dy) {
+        return point.mag() < dx && PVector.angleBetween(ref, point) < dy;
+    }
+    
+    
+    protected void textAlignPolar(float angle) {
+        int h = angle == 0 || angle == PI ? CENTER : angle < PI ? LEFT : RIGHT;
+        int v = angle == HALF_PI || angle == 3 * HALF_PI ? CENTER : angle < HALF_PI || angle > 3 * HALF_PI ? BOTTOM : TOP;
+        textAlign(h, v);
+    }
+
+}
+
+
+
+
+public class Radar extends Polar {
+    
+    Radar(int TLx, int TLy, int width, int height) {
+        super(TLx, TLy, width, height);
+    }
     
     
     @Override // Center (minY) to 0
@@ -43,25 +67,9 @@ public class Radar extends Chart {
         noFill(); stroke(#DDDDDD); strokeWeight(1);
         
         int vertices = maxX.x - minX.x;
-        for(int i = 0; i <= 4; i++) {
-            polygon(0, 0, i * R / 4, vertices);
-        }
+        for(int i = 0; i <= 4; i++) polygon(0, 0, i * R / 4, vertices);
         
         popMatrix();
-        
-    }
-    
-    
-    private void textAlignPolar(float angle) {
-        int h = angle == 0 || angle == PI ? CENTER : angle < PI ? LEFT : RIGHT;
-        int v = angle == HALF_PI || angle == 3 * HALF_PI ? CENTER : angle < HALF_PI || angle > 3 * HALF_PI ? BOTTOM : TOP;
-        textAlign(h, v);
-    }
-    
-    
-    @Override
-    protected boolean isClose(PVector point, PVector ref, float dx, float dy) {
-        return point.mag() < dx && PVector.angleBetween(ref, point) < dy;
     }
     
     
@@ -72,15 +80,16 @@ public class Radar extends Chart {
         
         fill(set.tint, 70); stroke(set.tint); strokeWeight(1);
         beginShape();
-        for(int i=0; i < set.size(); i++) {
-            Datum d = set.get(i);
+        for(Datum d : set.data()) {
+            
             PVector polarPos = getPosition(d.x, d.y);
             PVector pos = CoordinateSystem.toCartesian(polarPos.y, polarPos.x);
+            
+            vertex(pos.x, pos.y);
             
             PVector mousePos = mousePos().sub(center).rotate(HALF_PI);
             boolean isClose = isClose(mousePos, pos, R, PI / set.size() );
             
-            vertex(pos.x, pos.y);
             if(isClose) tooltips.add( new Tooltip(
                 tooltips,
                 pos.rotate(-HALF_PI).add(center),
@@ -112,26 +121,27 @@ public class Radar extends Chart {
 
 
 
-public class Pie extends Chart {
-
-    PVector center;    
-    float R;
-    float r;
+public class Pie extends Polar {
+    
+    private float donutWidth = Float.NaN;
+    private boolean showLabels = true;
     
     public Pie(int x, int y, int width, int height) {
         super(x, y, width, height);
         plotMin = new PVector(0, 0);
-        plotMax = new PVector(10, TWO_PI);
+        plotMax = new PVector(R, TWO_PI);
         stacked = true;
-        
-        center = new PVector(width / 2, height / 2);
-        R = min(center.x, center.y);
-        r = 0;
     }
     
-    public Pie(int x, int y, int width, int height, int stroke) {
+    public Pie(int x, int y, int width, int height, float dWidth) {
         this(x, y, width, height);
-        r = R - stroke;
+        this.donutWidth = dWidth;
+    }
+    
+    
+    public Chart showLabels(boolean labels) {
+        showLabels = labels;
+        return this;
     }
     
     
@@ -150,13 +160,6 @@ public class Pie extends Chart {
     }
     
     
-    @Override  // Prevent making PIE chart non-stacked
-    public void stacked(boolean stacked) {}
-    
-    
-    protected void drawAxis(boolean x, boolean y) {}
-
-    
     protected void drawSet(FloatList stack, Set set) {
         
         pushMatrix();
@@ -169,20 +172,41 @@ public class Pie extends Chart {
         for(Datum d : set.data()) {
             
             float angle = getPosition(0, d.y).y;
+            float midPoint = prevAngle + angle / 2; 
             
-            PVector polarMouse = CoordinateSystem.toPolarUnsigned( mousePos().sub(center) );
-            float dx = (R-r) / 2;
-            boolean isClose = isClose( polarMouse, new PVector(r + dx, prevAngle + angle / 2), dx, angle / 2);
-            if(isClose) tooltips.add(new Tooltip(tooltips, mousePos(), d.label + " " + String.format("%." + decimals + "f", d.y) + set.units, set.tint));
-            
-            fill(set.tint, isClose ? 255 : 200); noStroke();
+            fill(set.tint); stroke(#FFFFFF);
             arc(0, 0, 2*R, 2*R, prevAngle, prevAngle + angle, PIE);
-            drawDot(0, 0, #FFFFFF, int(2*r));
+            
+            if( !Float.isNaN(donutWidth) ) drawDot(0, 0, #FFFFFF, int(2 * (R-donutWidth)));
+            
+            PVector mousePos = mousePos().sub(center);
+            PVector point = CoordinateSystem.toCartesian(R, midPoint);
+            boolean isClose = isClose(mousePos, point, R, angle / 2 );
+            
+            if(isClose) tooltips.add( new Tooltip(
+                tooltips,
+                mousePos.add(center),
+                String.format("%." + decimals + "f", d.y) + set.units,
+                set.tint
+            ));
+            
+            if(showLabels) {
+                pushMatrix();
+                rotate(midPoint);
+                translate(2*R/3, 0);
+                if(midPoint > HALF_PI && midPoint < 3 * HALF_PI) rotate(-PI);
+                fill(#FFFFFF); textSize(9); textAlign(CENTER, CENTER);
+                text(d.label, 0, 0);
+                popMatrix();
+            }
             
             prevAngle += angle;
         }
         
         popMatrix();
     }
+    
+    
+    protected void drawAxis(boolean x, boolean y) {}
 
 }
