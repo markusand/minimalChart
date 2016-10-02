@@ -1,6 +1,6 @@
 protected abstract class Cartesian extends Chart {
     
-    Cartesian(int TLx, int TLy, int width, int height) {
+    protected Cartesian(int TLx, int TLy, int width, int height) {
         super(TLx, TLy, width, height);
         plotMin = new PVector(0, size.y);
         plotMax = new PVector(size.x, 0);
@@ -8,7 +8,6 @@ protected abstract class Cartesian extends Chart {
     
     
     protected void drawAxis(boolean x, boolean y) {
-        
         if(x) {  
             for(int i = minX.x; i <= maxX.x; i++) {
                 PVector axisBottom = getPosition(i, minY.y);
@@ -23,7 +22,6 @@ protected abstract class Cartesian extends Chart {
                 }
             }
         }
-        
     }
     
 }
@@ -41,7 +39,7 @@ public class Scatter extends Cartesian {
     
     
     @Override  // Prevent making DOT chart stacked
-    public void stacked(boolean stacked) {}
+    public Chart stacked(boolean stacked) { return this; }
     
     
     protected void drawSet(FloatList stack, Set set) {
@@ -62,7 +60,7 @@ public class Scatter extends Cartesian {
 
 public class Lines extends Cartesian {
     
-    int dotSize = 5;
+    int dotSize = 7;
     int lineStroke = 1;
     
     Lines(int x, int y, int width, int height) {
@@ -81,11 +79,10 @@ public class Lines extends Cartesian {
             if(isClose) tooltips.add(new Tooltip(tooltips, pos, String.format("%." + decimals + "f", d.y) + set.units, set.tint));
             
             if(prevPos != null) drawLine(prevPos, pos, set.tint, 1);
-            drawDot(pos, set.tint, isClose ? 2 * dotSize : dotSize);
+            drawDot(pos, set.tint, isClose ? dotSize + 3 : dotSize);
             
             prevPos = new PVector(pos.x, pos.y);
         }
-        
     }
     
 }

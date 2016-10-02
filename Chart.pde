@@ -60,27 +60,30 @@ public abstract class Chart {
     
     // Set de number of decimals to display
     // @param dec  Number of decimals
-    public void setDecimals(int decimals) {
+    public Chart setDecimals(int decimals) {
         this.decimals = decimals;
+        return this;
     }
     
     
     // Set graph with stacked datasets
     // @param stacked
-    public void stacked(boolean stacked) {
+    public Chart stacked(boolean stacked) {
         this.stacked = stacked;
+        return this;
     }
     
     
     // Set visibility of axis
     // @param axisX  Vertical axis
     // @param axisY  Horizontal axis
-    public void showAxis(boolean axisX, boolean axisY) {
+    public Chart showAxis(boolean axisX, boolean axisY) {
         showAxisX = axisX;
         showAxisY = axisY;
         // Padding for labels
         if(showAxisX) plotMin.y -= 15;
         else plotMin.y = size.y;
+        return this;
     }
     
     
@@ -258,10 +261,15 @@ public abstract class Chart {
     
     protected void drawArea(PVector v1, PVector v2, PVector v3, PVector v4, color tint) {
         fill(tint); noStroke();
+        noStroke();
         beginShape();
+            //fill( lerpColor(color(#00FF00,70), tint, v1.y / size.y) );
             vertex(v1.x, v1.y);
+            //fill( lerpColor(color(#00FF00,70), tint, v2.y / size.y) );
             vertex(v2.x, v2.y);
+            //fill( lerpColor(color(#00FF00,70), tint, v3.y / size.y) );
             vertex(v3.x, v3.y);
+            //fill( lerpColor(color(#00FF00,70), tint, v4.y / size.y) );
             vertex(v4.x, v4.y);
         endShape(CLOSE);
     }
