@@ -36,6 +36,8 @@ protected abstract class Polar extends Chart {
 
 public class Radar extends Polar {
     
+    private int opacity = 70;
+    
     Radar(int TLx, int TLy, int width, int height) {
         super(TLx, TLy, width, height);
         showAxis(true, true);
@@ -43,7 +45,7 @@ public class Radar extends Polar {
     
     
     @Override // Center (minY) to 0
-    protected PVector getPosition(int x, float y) {
+    public PVector getPosition(int x, float y) {
         return new PVector(
             map(x, minX.x, maxX.x+1, limitsMin.x, limitsMax.x),
             map(y, 0, maxY.y, limitsMin.y, limitsMax.y)
@@ -83,7 +85,7 @@ public class Radar extends Polar {
         translate(center.x, center.y);
         rotate(-HALF_PI);
         
-        fill(set.COLOR, 70); stroke(set.COLOR); strokeWeight(1);
+        fill(set.COLOR, opacity); stroke(set.COLOR); strokeWeight(1);
         beginShape();
         for(Datum datum : set.data()) {
             
@@ -128,8 +130,7 @@ public class Radar extends Polar {
 
 public class Pie extends Polar {
     
-    private float donutWidth = Float.NaN;
-    private boolean showLabels = false;
+    private boolean showLabels = true;
     
     public Pie(int x, int y, int width, int height) {
         super(x, y, width, height);

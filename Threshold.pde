@@ -1,37 +1,39 @@
 protected class Threshold {
     
-    private Chart chart;
-    private String name;
-    private float min;
-    private float max;
-    private color tint;
+    private final Chart CHART;
+    private final String NAME;
+    private final float MIN;
+    private final float MAX;
+    private final color COLOR;
+    
+    private int opacity = 70;
     
     Threshold(Chart chart, String name, float min, float max, color tint) {
-        this.chart = chart;
-        this.name = name;
+        CHART = chart;
+        NAME = name;
         if(min < max) {
-            this.min = min;
-            this.max = max;
+            MIN = min;
+            MAX = max;
         } else {
-            this.min = max;
-            this.max = min;
+            MIN = max;
+            MAX = min;
         }
-        this.tint = tint;
+        COLOR = tint;
     }
     
-    protected void draw() {
-        if(max >= chart.minY.y && min <= chart.maxY.y) {
-            PVector minPos = chart.getPosition(0, min > chart.minY.y ? min : chart.minY.y);
-            if( min == max ) {
-                stroke(tint); strokeWeight(1);
-                line(0, minPos.y, chart.size.x, minPos.y);
+    public void draw() {
+        if(MAX >= CHART.minY.y && MIN <= CHART.maxY.y) {  // Threshold inside chart bounds 
+            PVector minPos = CHART.getPosition(CHART.minX.x, constrain(MIN, CHART.minY.y, CHART.maxY.y));
+            if( MIN == MAX ) {
+                stroke(COLOR); strokeWeight(1);
+                line(0, minPos.y, CHART.SIZE.x, minPos.y);
             } else {
-                PVector maxPos = chart.getPosition(chart.maxX.x, max < chart.maxY.y ? max : chart.maxY.y);
-                fill(tint, 70); noStroke(); rectMode(CORNERS);
+                PVector maxPos = CHART.getPosition(CHART.maxX.x, constrain(MAX, CHART.minY.y, CHART.maxY.y));
+                fill(COLOR, opacity); noStroke(); rectMode(CORNERS);
                 rect(minPos.x, minPos.y, maxPos.x, maxPos.y);
             }
-            fill(tint); textAlign(LEFT, BOTTOM);
-            text(name, 3, minPos.y);
+            fill(COLOR); textAlign(LEFT, BOTTOM);
+            text(NAME, 3, minPos.y);
         }
     }
     

@@ -2,7 +2,7 @@ Chart tempLines, tempArea, tempBars, tempBarsStacked, charsRadar, agesPie;
 
 void setup() {
 
-    size(1000, 500, P2D);
+    size(975, 500, P2D);
     pixelDensity(2);
     
     String[] months = new String[] { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
@@ -10,7 +10,7 @@ void setup() {
     Set tempMin = new Set("Tmin", "ºC", #3399FF);
     Set tempMax = new Set("Tmin", "ºC", #FF6655);
     Set tempRand = new Set("Trand", "ºC", #FFB347); 
-    for(int i = 0; i < 10; i++) {
+    for(int i = 0; i < 12; i++) {
         tempMin.add( new Datum(i, random(0, 15), months[i % months.length]) );
         tempMax.add( new Datum(i, random(15, 30), months[i % months.length]) );
         tempRand.add( new Datum(i, random(0, 30), months[i % months.length]) );
@@ -57,7 +57,7 @@ void setup() {
     Set oldPop = new Set("Elder", "People", #FFB347);
         oldPop.add( new Datum(5, "+65") );
     
-    agesPie = new Pie(275, 325, 175, 125, 8);
+    agesPie = new Pie(275, 325, 175, 125, 40);
     agesPie.add(youngPop, adultPop, oldPop);
     
     

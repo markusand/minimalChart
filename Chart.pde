@@ -23,8 +23,8 @@ import java.util.Map.Entry;
 
 public abstract class Chart {
 
-    protected PVector TL;
-    protected PVector size;
+    public final PVector TL;
+    public final PVector SIZE;
     protected PVector limitsMin;
     protected PVector limitsMax;
     
@@ -54,7 +54,7 @@ public abstract class Chart {
     // @param height  Height of chart
     public Chart(int TLx, int TLy, int width, int height) {
         TL = new PVector(TLx, TLy);
-        size = new PVector(width, height);
+        SIZE = new PVector(width, height);
     }
     
     
@@ -81,8 +81,8 @@ public abstract class Chart {
         showAxisX = axisX;
         showAxisY = axisY;
         // Padding for labels
-        if(showAxisX) limitsMin.y -= 15;
-        else limitsMin.y = size.y;
+        if(showAxisX) limitsMin.sub(0, 15);
+        else limitsMin.y = SIZE.y;
         return this;
     }
     
@@ -158,38 +158,38 @@ public abstract class Chart {
     
     // Draw Chart
     public void draw() {
+        if( sets.size() > 0 ) { 
         
-        if(minX == null || maxX == null || minY == null || maxY == null) return;
-        if(minX.x >= maxX.x || minY.y >= maxY.y) return;
-        
-        //hint(DISABLE_OPTIMIZED_STROKE);
-        
-        FloatList stack = new FloatList();
-        tooltips = new ArrayList();
-        
-        pushStyle();
-        pushMatrix();
-        translate(TL.x, TL.y);
-        
-        drawAxis(showAxisX, showAxisY);
-        
-        for(int i = 0; i < sets.size(); i++) {
-            drawSet(i, sets.get(i), stack);
-            if(stacked) stack = updateStack(stack, sets.get(i));
+            //hint(DISABLE_OPTIMIZED_STROKE);
+            
+            FloatList stack = new FloatList();
+            tooltips = new ArrayList();
+            
+            pushStyle();
+            pushMatrix();
+            translate(TL.x, TL.y);
+            
+            drawAxis(showAxisX, showAxisY);
+            
+            for(int i = 0; i < sets.size(); i++) {
+                drawSet(i, sets.get(i), stack);
+                if(stacked) stack = updateStack(stack, sets.get(i));
+            }
+            
+            for(Threshold threshold : thresholds) threshold.draw();
+            for(Tooltip tooltip : tooltips) tooltip.draw();
+            
+            popMatrix();
+            popStyle();
+            
         }
-        
-        for(Threshold threshold : thresholds) threshold.draw();
-        for(Tooltip tooltip : tooltips) tooltip.draw();
-        
-        popMatrix();
-        popStyle();
     }
     
     
     // Get position in chart of value
     // @param x  x value
     // @param y  y value
-    protected PVector getPosition(int x, float y) {
+    public PVector getPosition(int x, float y) {
         return new PVector(
             map(x, minX.x, maxX.x, limitsMin.x, limitsMax.x),
             map(y, minY.y, maxY.y, limitsMin.y, limitsMax.y)
@@ -211,9 +211,9 @@ public abstract class Chart {
     
     
     // Draw axis if required
-    // @param x  Draw x axis if true
-    // @param y  Draw y axis if true
-    protected abstract void drawAxis(boolean x, boolean y);
+    // @param showX  Draw x axis if true
+    // @param showY  Draw y axis if true
+    protected abstract void drawAxis(boolean showX, boolean showY);
     
     
     // Draw set
@@ -226,7 +226,7 @@ public abstract class Chart {
     // @param point  Point to check
     // @return true is point is inside chart, false otherwise
     protected boolean inChart(PVector point) {
-        return point.x >= 0 && point.x <= size.x && point.y >= 0 && point.y <= size.y;
+        return point.x >= 0 && point.x <= SIZE.x && point.y >= 0 && point.y <= SIZE.y;
     }
     
     
