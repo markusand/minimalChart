@@ -34,7 +34,7 @@ temp.add(tMin, tMax);
 
 ## Features
 
-* Draw Scatter, Lines, Area, Radar, Pie and Donut charts
+* Draw Scatter, Lines, Area, Bars, Radar, Pie and Donut charts
 * Tooltips to visualize values
 * Draw threshold as line or area
 

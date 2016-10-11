@@ -1,8 +1,8 @@
 public class Datum {
     
-    public int x;
-    public float y;
-    public String label;
+    public final int x;
+    public final float y;
+    public final String LABEL;
     
     Datum(int y, String label) {
         this(0, y, label);
@@ -15,11 +15,11 @@ public class Datum {
     Datum(int x, float y, String label) {
         this.x = x;
         this.y = y;
-        this.label = label;
+        LABEL = label;
     }
    
     public String toString() {
-        return "datum: { x: " + x + ", y: " + y + ", label: " + label + " }";
+        return "datum: { x: " + x + ", y: " + y + ", label: " + LABEL + " }";
     }
     
 }

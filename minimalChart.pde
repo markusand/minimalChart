@@ -1,32 +1,38 @@
-Chart tempLines, tempArea, charsRadar, agesPie;
+Chart tempLines, tempArea, tempBars, tempBarsStacked, charsRadar, agesPie;
 
 void setup() {
 
-    size(500, 500, P2D);
+    size(1000, 500, P2D);
     pixelDensity(2);
-    
     
     String[] months = new String[] { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
     
     Set tempMin = new Set("Tmin", "ºC", #3399FF);
     Set tempMax = new Set("Tmin", "ºC", #FF6655);
-    //Set tempRandom = new Set("Trand", "ºC", #44FF55);
+    Set tempRand = new Set("Trand", "ºC", #FFB347); 
     for(int i = 0; i < 10; i++) {
-        tempMin.add( new Datum(i, random(0, 10), months[i]) );
-        tempMax.add( new Datum(i, random(10, 20), months[i]) );
-        //tempRandom.add( new Datum(i, random(0, 20), months[i]) );
+        tempMin.add( new Datum(i, random(0, 15), months[i % months.length]) );
+        tempMax.add( new Datum(i, random(15, 30), months[i % months.length]) );
+        tempRand.add( new Datum(i, random(0, 30), months[i % months.length]) );
     }
     
     tempLines = new Lines(25, 25, 450, 100);
     tempLines.showAxis(true, false).setDecimals(1);
-    //tempLines.threshold("Comfort", 10, 25, color(#FFB347, 100));
-    tempLines.add(tempMin, tempMax);
+    //tempLines.addThreshold("Comfort", 17, 25, color(#FFB347, 200));
+    //tempLines.addThreshold("Alert", 5, #FF0000);
+    tempLines.add(tempMin, tempMax, tempRand);
     
     tempArea = new Area(25, 175, 450, 100);
     tempArea.stacked(true).showAxis(true, true).setDecimals(1);
-    //tempArea.threshold("Comfort", 10, 25, color(#FFB347, 100));
     tempArea.add(tempMin, tempMax);
     
+    tempBars = new Bars(500, 25, 450, 100);
+    tempBars.showAxis(true, true).setDecimals(1);
+    tempBars.add(tempMin, tempMax, tempRand);
+    
+    tempBarsStacked = new Bars(500, 175, 450, 100);
+    tempBarsStacked.showAxis(true, true).setDecimals(1).stacked(true);
+    tempBarsStacked.add(tempMin, tempMax, tempRand);
     
     String[] habs = new String[] { "FISICO", "PASE", "DEFENSA", "VELOCIDAD", "DRIBLAJE", "LIDERAZGO", "TACTICA", "TEATRO" };
     
@@ -51,8 +57,7 @@ void setup() {
     Set oldPop = new Set("Elder", "People", #FFB347);
         oldPop.add( new Datum(5, "+65") );
     
-    agesPie = new Pie(275, 300, 175, 175, 60);
-    //agesPie.showLabels(true);
+    agesPie = new Pie(275, 325, 175, 125, 8);
     agesPie.add(youngPop, adultPop, oldPop);
     
     
@@ -66,6 +71,7 @@ void draw() {
     tempArea.draw();
     charsRadar.draw();
     agesPie.draw();
-    
+    tempBars.draw();
+    tempBarsStacked.draw();
     
 }

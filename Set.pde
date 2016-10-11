@@ -1,10 +1,11 @@
 public class Set {
 
-    public String name;
-    public String units;
-    public color tint;
+    public final String NAME;
+    public final String UNITS;
+    public final color COLOR;
     
     private ArrayList<Datum> data = new ArrayList();
+    private HashMap<Integer, String> labels = new HashMap();
     private Datum minX = null;
     private Datum maxX = null;
     private Datum minY = null;
@@ -18,9 +19,9 @@ public class Set {
     * @param tint Color of dataset
     */
     Set(String name, String units, color tint) {
-        this.name = name;
-        this.units = units;
-        this.tint = tint;
+        NAME = name;
+        UNITS = units;
+        COLOR = tint;
     }
     
     
@@ -39,10 +40,14 @@ public class Set {
     public void add(Datum... newData) {
         for(Datum d : newData) {
             this.data.add(d);
+            
             if( minY == null || d.y < minY.y ) minY = d;
             if( maxY == null || d.y > maxY.y ) maxY = d;
             if( minX == null || d.x < minX.x ) minX = d;
             if( maxX == null || d.x > maxX.x ) maxX = d;
+            
+            if( !labels.containsKey(d.x) ) labels.put(d.x, d.LABEL);
+            else if( !labels.get(d.x).equals(d.LABEL) ) labels.put(d.x, labels.get(d.x) + "\n" + d.LABEL );
         }
     }
     
@@ -136,11 +141,6 @@ public class Set {
     
     
     public HashMap<Integer, String> getLabels() {
-        HashMap<Integer, String> labels = new HashMap();
-        for(Datum d : data) {
-            if( !labels.containsKey(d.x) ) labels.put(d.x, d.label);
-            else if( !labels.get(d.x).equals(d.label) ) labels.put(d.x, labels.get(d.x) + "\n" + d.label );
-        }
         return labels;
     }
     

@@ -36,16 +36,3 @@ protected class Threshold {
     }
     
 }
-
-
-protected class RThreshold extends Threshold {
-    
-    RThreshold(Chart chart, String name, float min, float max, color tint) {
-        super(chart, name, min, max, tint);
-    }
-    
-    @Override
-    protected void draw() {
-    }
-    
-}

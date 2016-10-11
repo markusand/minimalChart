@@ -25,8 +25,8 @@ public abstract class Chart {
 
     protected PVector TL;
     protected PVector size;
-    protected PVector plotMin;
-    protected PVector plotMax;
+    protected PVector limitsMin;
+    protected PVector limitsMax;
     
     protected int margin = 0;
     
@@ -81,8 +81,8 @@ public abstract class Chart {
         showAxisX = axisX;
         showAxisY = axisY;
         // Padding for labels
-        if(showAxisX) plotMin.y -= 15;
-        else plotMin.y = size.y;
+        if(showAxisX) limitsMin.y -= 15;
+        else limitsMin.y = size.y;
         return this;
     }
     
@@ -162,6 +162,8 @@ public abstract class Chart {
         if(minX == null || maxX == null || minY == null || maxY == null) return;
         if(minX.x >= maxX.x || minY.y >= maxY.y) return;
         
+        //hint(DISABLE_OPTIMIZED_STROKE);
+        
         FloatList stack = new FloatList();
         tooltips = new ArrayList();
         
@@ -171,9 +173,9 @@ public abstract class Chart {
         
         drawAxis(showAxisX, showAxisY);
         
-        for(Set set : sets) {
-            drawSet(stack, set);
-            if(stacked) stack = updateStack(stack, set);
+        for(int i = 0; i < sets.size(); i++) {
+            drawSet(i, sets.get(i), stack);
+            if(stacked) stack = updateStack(stack, sets.get(i));
         }
         
         for(Threshold threshold : thresholds) threshold.draw();
@@ -189,8 +191,8 @@ public abstract class Chart {
     // @param y  y value
     protected PVector getPosition(int x, float y) {
         return new PVector(
-            map(x, minX.x, maxX.x, plotMin.x, plotMax.x),
-            map(y, minY.y, maxY.y, plotMin.y, plotMax.y)
+            map(x, minX.x, maxX.x, limitsMin.x, limitsMax.x),
+            map(y, minY.y, maxY.y, limitsMin.y, limitsMax.y)
         );
     } 
     
@@ -201,7 +203,7 @@ public abstract class Chart {
     // @return updated stack with added set values
     private FloatList updateStack(FloatList stack, Set set) {
         for(Datum d : set.data()) {
-            while( stack.size() <= d.x ) stack.append( minY.y );
+            while( stack.size() <= d.x ) stack.append(minY.y);
             stack.add(d.x, d.y);
         }
         return stack;
@@ -217,7 +219,7 @@ public abstract class Chart {
     // Draw set
     // @param stack  List with stacked values (if available)
     // @param set  Set to draw
-    protected abstract void drawSet(FloatList stack, Set set);
+    protected abstract void drawSet(int setNum, Set set, FloatList stack);
          
     
     // Check if point is inside chart boundaries
