@@ -1,3 +1,6 @@
+/**
+* Define a graphical user interface element that shows the value when the user hovers the mouse over the datum position
+*/
 private class Tooltip {
     
     private PVector pos;
@@ -5,6 +8,13 @@ private class Tooltip {
     private color tint;
     
     
+    /**
+    * Create a tooltip. If the tooltip overlaps other tooltips it slightly moves its position to avoid overlapping
+    * @param tooltips    the already existing tooltips
+    * @param pos         the position of the tooltips
+    * @param label       the label of the tooltip
+    * @param tint        the color of the tooltip
+    */
     Tooltip(ArrayList<Tooltip> tooltips, PVector pos, String label, color tint) {
         this.pos = pos.copy().sub(0, 14);
         this.label = label;
@@ -20,6 +30,9 @@ private class Tooltip {
     }
     
     
+    /**
+    * Draw the tooltip
+    */
     public void draw() {
         fill(tint); noStroke(); rectMode(CENTER);
         rect(pos.x, pos.y, textWidth(label) + 10, 20, 3);

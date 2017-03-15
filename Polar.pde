@@ -1,9 +1,20 @@
-protected abstract class Polar extends Chart {
+/**
+* Define a chart with polar coordinates, characterized by a center, an angle and a radius
+* @author       Marc Vilella
+*/
+protected abstract class PolarChart extends Chart {
     
     protected PVector center;
     protected float minR, maxR;
 
-    protected Polar(int TLx, int TLy, int width, int height) {
+    /**
+    * Create a chart in polar coordinates
+    * @param TLx        the x coordinate of Top-Left corner
+    * @param TLy        the y coordinate of Top-Left corner
+    * @param width      the width of the chart
+    * @param height     the height of the chart
+    */
+    protected PolarChart(int TLx, int TLy, int width, int height) {
         super(TLx, TLy, width, height);
         center = new PVector(width / 2, height / 2);
         maxR = min(center.x, center.y);
@@ -12,10 +23,19 @@ protected abstract class Polar extends Chart {
     }
     
     
-    @Override  // Prevent to change stacked option
+    /**
+    * Prevent possibility of making polar chart stacked, overriding the super class not assigning any change
+    * @see Chart
+    */
+    @Override
     public Chart stacked(boolean stacked) { return this; }
     
     
+    /**
+    * Check wheter a point is close to a reference in the chart. In polar coordinates, the reference point is defined
+    * by a radius and an angle, and the deviation is the radius variation and the angle variation
+    * @see Chart
+    */
     @Override
     protected boolean isClose(PVector point, PVector ref, float dx, float dy) {
         float pointR = point.mag();
@@ -23,6 +43,10 @@ protected abstract class Polar extends Chart {
     }
     
     
+    /**
+    * Aligns text horizontaly and verticaly depending in its position in an circumference.
+    * @param angle    The starting angle position of the text
+    */
     protected void textAlignPolar(float angle) {
         int h = angle == 0 || angle == PI ? CENTER : angle < PI ? LEFT : RIGHT;
         int v = angle == HALF_PI || angle == 3 * HALF_PI ? CENTER : angle < HALF_PI || angle > 3 * HALF_PI ? BOTTOM : TOP;
@@ -33,17 +57,32 @@ protected abstract class Polar extends Chart {
 
 
 
-
-public class Radar extends Polar {
+/**
+* Radar Charts compare multiple quantitative variables, making them useful for seeing which variables have similar values or if
+* there are any outliers amongst each variable. Radar Charts are also useful for seeing which variables are scoring high or low
+* within a dataset, making them ideal for displaying performance.
+*/
+public class RadarChart extends PolarChart {
     
-    private int opacity = 70;
+    private int opacity;
     
-    Radar(int TLx, int TLy, int width, int height) {
+    
+    /**
+    * Create a radar chart in polar coordinates
+    * @see PolarChart
+    * @param opacity       the opacity of dataset polygons
+    */
+    RadarChart(int TLx, int TLy, int width, int height, int opacity) { //<>//
         super(TLx, TLy, width, height);
         showAxis(true, true);
+        this.opacity = opacity;
     }
     
     
+    /**
+    * Get the position of XY value in chart, overridind the minimum y value (radius) to 0
+    * @see Chart
+    */
     @Override // Center (minY) to 0
     public PVector getPosition(int x, float y) {
         return new PVector(
@@ -53,11 +92,15 @@ public class Radar extends Polar {
     }
     
     
-    protected void drawAxis(boolean showX, boolean showY) {
+    /**
+    * Draw axis if required
+    * @see Chart
+    */
+    protected void drawAxis() {
         pushMatrix();
         translate(center.x, center.y);
         
-        if(showX) {
+        if(showAxisX) {
             for(int i = minX.x; i <= maxX.x; i++) {
                 PVector polarVertex = getPosition(i, maxY.y);
                 PVector vertex = CoordinateSystem.toCartesian(polarVertex.y, -HALF_PI + polarVertex.x);
@@ -69,7 +112,7 @@ public class Radar extends Polar {
             }
         }
         
-        if(showY) {
+        if(showAxisY) {
             rotate(-HALF_PI);
             noFill(); stroke(#DDDDDD); strokeWeight(1);
             int vertices = maxX.x - minX.x;
@@ -80,7 +123,11 @@ public class Radar extends Polar {
     }
     
     
-    protected void drawSet(int setNum, Set set, FloatList stack) {
+    /**
+    * Draw a dataset
+    * @see Chart
+    */
+    protected void drawDataSet(int setNum, DataSet set, FloatList stack) {
         pushMatrix();
         translate(center.x, center.y);
         rotate(-HALF_PI);
@@ -111,6 +158,13 @@ public class Radar extends Polar {
     }
     
     
+    /**
+    * Draw a regular polygon with multiple sides and vertices
+    * @param x           the center x coordinate of the polygon
+    * @param y           the center y coordinate of the polygon
+    * @param R           the radius of the polygon
+    * @param vertices    the number of vertices
+    */
     private void polygon(int x, int y, float R, int vertices) {
         float angle = TWO_PI / (vertices + 1);
         beginShape(TRIANGLE_FAN);
@@ -127,35 +181,58 @@ public class Radar extends Polar {
 
 
 
-
-public class Pie extends Polar {
+/**
+* Extensively used in presentations and offices, Pie Charts help show proportions and percentages between categories, by dividing
+* a circle into proportional segments. Each arc length represents a proportion of each category, while the full circle represents
+* the total sum of all the data, equal to 100%.
+*/
+public class PieChart extends PolarChart {
     
     private boolean showLabels = true;
+    private color holeColor = #FFFFFF;
     
-    public Pie(int x, int y, int width, int height) {
+    /**
+    * Create a pie chart in polar coordinates
+    * @see PolarChart
+    */
+    public PieChart(int x, int y, int width, int height) {
         super(x, y, width, height);
         limitsMin = new PVector(0, 0);
         limitsMax = new PVector(maxR, TWO_PI);
         stacked = true;
     }
     
-    public Pie(int x, int y, int width, int height, float dWidth) {
+    
+    /**
+    * Create a donut chart in polar coordinates. A donut chart is essentially a Pie Chart with an area of the center cut out.
+    * @see PolarChart
+    * @param thickness    Thickness of the donut arcs
+    */
+    public PieChart(int x, int y, int width, int height, float thickness) {
         this(x, y, width, height);
-        this.minR = maxR - dWidth;
+        minR = maxR - thickness;
     }
     
     
+    /**
+    * Set wheter labels have to be drawn
+    * @param labels    Whether labels are displayed
+    * @return          the chart itself, simply used for method chaining    
+    */
     public Chart showLabels(boolean labels) {
         showLabels = labels;
         return this;
     }
     
     
+    /**
+    * Calculate min and max boundaries for pie/donut chart, as the total amount of values
+    */
     @Override
     protected void calcStackedBounds() {
         float sum = 0;
         int amount = 0;
-        for(Set set : sets) {
+        for(DataSet set : sets) {
             for(Datum datum : set.data()) {
                 sum += datum.y;
                 amount++;
@@ -166,7 +243,11 @@ public class Pie extends Polar {
     }
     
     
-    protected void drawSet(int setNum, Set set, FloatList stack) {
+    /**
+    * Draw a dataset
+    * @see Chart
+    */
+    protected void drawDataSet(int setNum, DataSet set, FloatList stack) {
         
         pushMatrix();
         translate(center.x, center.y);
@@ -183,7 +264,7 @@ public class Pie extends Polar {
             fill(set.COLOR); stroke(#FFFFFF);
             arc(0, 0, 2*maxR, 2*maxR, prevAngle, prevAngle + angle, PIE);
             
-            if( minR > 0 ) drawDot(0, 0, #FFFFFF, int(2 * minR));
+            if( minR > 0 ) drawDot(0, 0, holeColor, int(2 * minR));
             
             PVector mousePos = mousePos().sub(center);
             PVector point = CoordinateSystem.toCartesian(maxR, midPoint);
@@ -213,6 +294,10 @@ public class Pie extends Polar {
     }
     
     
-    protected void drawAxis(boolean showX, boolean showY) {}
+    /**
+    * Override axis drawing function to prevent axis to be drawn
+    */
+    @Override
+    protected void drawAxis() {}
 
 }

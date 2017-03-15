@@ -1,26 +1,10 @@
-/*
- * minimalChart
- * 
- * Draw simple and minimalistic charts
- *
- * @author          Marc Vilella
- *                  Observatori de la Sostenibilitat d'Andorra (OBSA)
- *                  mvilella@obsa.ad
- * @contributors    
- * @copyright       Copyright (c) 2016 Marc Vilella
- * @license         MIT License
- * @required        
- * @version         0.1
- *
- * @bugs            RADAR charts do not close and have not proper hover tooltips
- *
- * @todo            Add BAR and PIE charts
-*/
-
-
 import java.util.Map.Entry;
 
-
+/**
+* Represents a chart and allows to plot different data sets. This is an abstract class with basic chart
+* functionality, different types of chart can be instantiated with specific subclasses (e.g LineChart).
+* @author       Marc Vilella
+*/
 public abstract class Chart {
 
     public final PVector TL;
@@ -36,7 +20,7 @@ public abstract class Chart {
     
     protected boolean stacked = false;
     
-    protected ArrayList<Set> sets = new ArrayList();  
+    protected ArrayList<DataSet> sets = new ArrayList();  
     protected HashMap<Integer, String> labels = new HashMap();
     protected Datum minY = null;
     protected Datum maxY = null;
@@ -47,66 +31,68 @@ public abstract class Chart {
     protected ArrayList<Threshold> thresholds = new ArrayList();
     
     
-    // Constructor for chart
-    // @param TLx  Position x of Top-Left corner
-    // @param TLy  Position y of Top-Left corner
-    // @param width  Width of chart
-    // @param height  Height of chart
+    /**
+    * Create a new chart in specified position with specified size
+    * @param TLx       the x position of Top-Left corner
+    * @param TLy       the y position of Top-Left corner
+    * @param width     the width of chart
+    * @param height    the height of chart
+    */
     public Chart(int TLx, int TLy, int width, int height) {
         TL = new PVector(TLx, TLy);
         SIZE = new PVector(width, height);
     }
     
     
-    // Set de number of decimals to display
-    // @param dec  Number of decimals
+    /**
+    * Set the number of decimals to display
+    * @param decimals    the number of decimals
+    * @return            the chart itself, simply used for method chaining
+    */
     public Chart setDecimals(int decimals) {
         this.decimals = decimals;
         return this;
     }
     
     
-    // Set graph with stacked datasets
-    // @param stacked
+    /**
+    * Set whether the chart is stacked
+    * @param stacked    whether the chart is stacked 
+    * @return           the chart itself, simply used for method chaining
+    */
     public Chart stacked(boolean stacked) {
         this.stacked = stacked;
         return this;
     }
     
     
-    // Set visibility of axis
-    // @param axisX  Vertical axis
-    // @param axisY  Horizontal axis
+    /**
+    * Set whether the horizontal (x) and vertical (y) axis are shown
+    * @param axisX    whether the x axis is shown
+    * @param axisY    whether the y axis is shown
+    * @return         the chart itself, simply used for method chaining
+    */
     public Chart showAxis(boolean axisX, boolean axisY) {
         showAxisX = axisX;
         showAxisY = axisY;
-        // Padding for labels
-        if(showAxisX) limitsMin.sub(0, 15);
+        if(showAxisX) limitsMin.sub(0, 15);  // Padding for labels
         else limitsMin.y = SIZE.y;
         return this;
     }
     
     
-    // Add a threshold line in chart
-    // @param name  Name of the threshold
-    // @param value  Value to set the threshold
-    // @param tint  Color of threshold line
-    public void addThreshold(String name, float value, color tint) {
-        addThreshold(name, value, value, tint);
+    /**
+    * Add a threshold to the chart
+    * @param threshold    the threshold to add
+    */
+    public void addThreshold(Threshold threshold) {
+        thresholds.add( threshold );
     }
     
     
-    // Add a threshold area in chart
-    // @param name  Name of the threshold
-    // @param min  Minimum value of threshold area
-    // @param max  Maximum value of threshold area
-    // @param tint  Color of threshold area
-    public void addThreshold(String name, float min, float max, color tint) {
-        thresholds.add( new Threshold(this, name, min, max, tint) );
-    }
-    
-    
-    // Set the chart to an initial "blank" state. Delete all existing datasets and initiate boundaries
+    /**
+    * Clear the chart. Delete all existing datasets and initiate boundaries
+    */
     public void clear() {
         sets.clear();
         minX = maxX = minY = maxY = null;
@@ -114,10 +100,12 @@ public abstract class Chart {
     }
     
     
-    // Add a dataset to chart, and update boundaries
-    // @param sets  Set(s) to add to chart
-    public void add(Set... newSets) {
-        for(Set set : newSets) {
+    /**
+    * Add dataset(s) to chart. after one dataset is added, min and max boundaries are recalculated
+    * @param sets    the set(s) to add
+    */
+    public void add(DataSet... newSets) {
+        for(DataSet set : newSets) {
             if( !set.isEmpty() ) {
                 sets.add(set);
                 if( !stacked ) {
@@ -140,23 +128,27 @@ public abstract class Chart {
     }
     
     
-    // Calculate min and max boundaries for stacked chart, and largest number of sample
+    /**
+    * Calculate min and max boundaries for stacked chart, and largest number of sample
+    */
     protected void calcStackedBounds() {
         if( maxX == null || minX == null) return;
         float[] stack = new float[ maxX.x - minX.x + 1 ];
-        for(Set set : sets) {
+        for(DataSet set : sets) {
             for(Datum datum : set.data()) {
                 stack[ datum.x - minX.x ] += datum.y;
             }
         }
         minY = new Datum(0, 0, "MIN" );
         for(int i = 0; i < stack.length; i++) {
-            if( maxY == null || stack[i] > maxY.y ) maxY = new Datum( i + minX.x, stack[i], "MAX" );
+            if( maxY == null || stack[i] > maxY.y ) maxY = new Datum( minX.x + i, stack[i], "MAX" );
         }
     }
     
     
-    // Draw Chart
+    /**
+    * Draw the chart
+    */
     public void draw() {
         if( sets.size() > 0 ) { 
         
@@ -169,26 +161,30 @@ public abstract class Chart {
             pushMatrix();
             translate(TL.x, TL.y);
             
-            drawAxis(showAxisX, showAxisY);
+            drawAxis();
             
             for(int i = 0; i < sets.size(); i++) {
-                drawSet(i, sets.get(i), stack);
+                drawDataSet(i, sets.get(i), stack);
                 if(stacked) stack = updateStack(stack, sets.get(i));
             }
             
-            for(Threshold threshold : thresholds) threshold.draw();
             for(Tooltip tooltip : tooltips) tooltip.draw();
             
             popMatrix();
             popStyle();
             
+            for(Threshold threshold : thresholds) threshold.draw(this);
+            
         }
     }
     
     
-    // Get position in chart of value
-    // @param x  x value
-    // @param y  y value
+    /**
+    * Get the position of XY value in chart
+    * @param x    the x value
+    * @param y    the y value
+    * @return     the position in chart
+    */
     public PVector getPosition(int x, float y) {
         return new PVector(
             map(x, minX.x, maxX.x, limitsMin.x, limitsMax.x),
@@ -197,70 +193,111 @@ public abstract class Chart {
     } 
     
     
-    // Update stack container
-    // @param stack  List with stacked values
-    // @param set  Set with values to add
-    // @return updated stack with added set values
-    private FloatList updateStack(FloatList stack, Set set) {
+    /**
+    * Update stack adding actual dataset values to it
+    * @param stack    the stack
+    * @param set      the actual dataset
+    * @return         the updated stack
+    */
+    private FloatList updateStack(FloatList stack, DataSet set) {
         for(Datum d : set.data()) {
-            while( stack.size() <= d.x ) stack.append(minY.y);
+            while( stack.size() <= d.x ) stack.append(minY.y);  // Add (possible) missing values
             stack.add(d.x, d.y);
         }
         return stack;
     }
     
     
-    // Draw axis if required
-    // @param showX  Draw x axis if true
-    // @param showY  Draw y axis if true
-    protected abstract void drawAxis(boolean showX, boolean showY);
+    /**
+    * Draw chart axis if required
+    */
+    protected abstract void drawAxis();
     
     
-    // Draw set
-    // @param stack  List with stacked values (if available)
-    // @param set  Set to draw
-    protected abstract void drawSet(int setNum, Set set, FloatList stack);
+    /**
+    * Draw a dataset
+    * @param setNum    the order number of dataset
+    * @param set       the set to draw
+    * @param stack     the stack. If the chart is not stacked, stack will be full of minims
+    */
+    protected abstract void drawDataSet(int setNum, DataSet set, FloatList stack);
          
     
-    // Check if point is inside chart boundaries
-    // @param point  Point to check
-    // @return true is point is inside chart, false otherwise
+    /**
+    * Return whether a point is inside chart boundaries
+    * @param point    Point to check
+    * @return         true if point is inside chart, false otherwise
+    */
     protected boolean inChart(PVector point) {
         return point.x >= 0 && point.x <= SIZE.x && point.y >= 0 && point.y <= SIZE.y;
     }
     
     
-    // Get mouse position over chart (correcting translate)
-    // @return x,y position of mouse
+    /**
+    * Get the mouse position over the chart. Position is relative to chart origin, and trnaslation is corrected
+    * @return    the mouse position
+    */
     protected PVector mousePos() {
         return new PVector(mouseX, mouseY).sub(TL.x, TL.y);
     }
     
     
-    // Check if a point is inbetween a deviation from a reference point
-    // @param point  Point to check
-    // @param ref  Reference point to check
-    // @param dx  Deviation in x-axis
-    // @param dy  Deviation in y-axis
-    // @return true if point is inbetween, false if not
+    /**
+    * Check whether a point is close to a reference point. Closeness is defined by a deviation in two axis (x and y)
+    * @param point    the point to check
+    * @param ref      the reference point
+    * @param dx       the deviation in x-axis
+    * @param dy       the deviation in y-axis
+    * @return         true if point is close, false otherwise
+    */
     protected boolean isClose(PVector point, PVector ref, float dx, float dy) {
         if( !inChart(point) ) return false;
         return abs( point.x - ref.x ) <= dx && abs( point.y - ref.y ) <= dy;
     }
     
     
+    /**
+    * Draw a dot with specified color and size
+    * @param pos     the position of dot
+    * @param tint    the color of dot
+    * @param size    the size of dot
+    */
+    protected void drawDot(PVector pos, color tint, int size) {
+        drawDot(pos.x, pos.y, tint, size);
+    }
     
-    protected void drawDot(PVector pos, color tint, int size) { drawDot(pos.x, pos.y, tint, size); }
+    
+    /**
+    * Draw a dot with specified color and size
+    * @param x       the horizontal position
+    * @param y       the vertical position
+    * @param tint    the color of dot
+    * @param size    the size of dot
+    */
     protected void drawDot(float x, float y, color tint, int size) {
         fill(tint); noStroke();
         ellipse(x, y, size, size);
     }     
-         
-    protected void drawLine(PVector from, PVector to, color tint, int weight) {
-        noFill(); stroke(tint); strokeWeight(weight);
+    
+    
+    /**
+    * Draw a line with specified color and stroke size
+    * @param from      the initial point of line
+    * @param to        the f-inal point of line
+    * @param tint      the color of line
+    * @param stroke    the stroke width of line
+    */
+    protected void drawLine(PVector from, PVector to, color tint, int stroke) {
+        noFill(); stroke(tint); strokeWeight(stroke);
         line(from.x, from.y, to.x, to.y);
     }     
     
+    
+    /**
+    * Draw an area with specified color
+    * @param v1, v2, v3, v4    the vertices of area
+    * @param tint              the color of area
+    */
     protected void drawArea(PVector v1, PVector v2, PVector v3, PVector v4, color tint) {
         fill(tint); noStroke();
         noStroke();

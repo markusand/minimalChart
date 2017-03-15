@@ -1,14 +1,28 @@
-protected abstract class Cartesian extends Chart {
+/**
+* Define a chart with cartesian coordinates. Axis are lineal in the X and Y direction
+* @author       Marc Vilella
+*/
+protected abstract class CartesianChart extends Chart {
     
-    protected Cartesian(int TLx, int TLy, int width, int height) {
+    /**
+    * Create a chart in cartesian coordinates
+    * @param TLx        the x coordinate of Top-Left corner
+    * @param TLy        the y coordinate of Top-Left corner
+    * @param width      the width of the chart
+    * @param height     the height of the chart
+    */
+    protected CartesianChart(int TLx, int TLy, int width, int height) {
         super(TLx, TLy, width, height);
         limitsMin = new PVector(0, SIZE.y);
         limitsMax = new PVector(SIZE.x, 0);
     }
     
     
-    protected void drawAxis(boolean showX, boolean showY) {
-        if(showX) {  
+    /**
+    * Draw chart axis if required
+    */
+    protected void drawAxis() {
+        if(showAxisX) {  
             for(int i = minX.x; i <= maxX.x; i++) {
                 PVector axisBottom = getPosition(i, minY.y);
                 PVector axisTop = getPosition(i, maxY.y);
@@ -28,20 +42,38 @@ protected abstract class Cartesian extends Chart {
 
 
 
-public class Scatter extends Cartesian {
+/**
+* Scatterplots use a collection of points placed using Cartesian Coordinates to display values from
+* two variables. By displaying a variable in each axis, you can detect if a relationship or correlation
+* between the two variables exists.
+*/
+public class ScatterChart extends CartesianChart {
     
     private int dotSize = 5;
     
-    Scatter(int x, int y, int width, int height) {
+    
+    /**
+    * Create a scatter chart in cartesian coordinates
+    * @see CartesianChart
+    */
+    ScatterChart(int x, int y, int width, int height) {
         super(x, y, width, height);
     }
     
     
-    @Override  // Prevent making DOT chart stacked
+    /**
+    * Prevent possibility of making scatter chart stacked, overriding the super class not assigning any change
+    * @see Chart
+    */
+    @Override
     public Chart stacked(boolean stacked) { return this; }
     
     
-    protected void drawSet(int setNum, Set set, FloatList stack) {
+    /**
+    * Draw a dataset
+    * @see Chart
+    */
+    protected void drawDataSet(int setNum, DataSet set, FloatList stack) {
         float dX = (float)(limitsMax.x - limitsMin.x) / (maxX.x - minX.x);
         
         for(Datum datum : set.data()) {
@@ -50,7 +82,7 @@ public class Scatter extends Cartesian {
             boolean isClose = isClose( mousePos(), pos,  dX/2, SIZE.y);
             if(isClose) tooltips.add(new Tooltip(tooltips, pos, String.format("%." + decimals + "f", datum.y) + set.UNITS, set.COLOR));
             
-            drawDot(pos, set.COLOR, 5);
+            drawDot(pos, set.COLOR, dotSize);
         }
     }
     
@@ -58,16 +90,35 @@ public class Scatter extends Cartesian {
 
 
 
-public class Lines extends Cartesian {
+/**
+* Line Graphs are used to display quantitative value over a continuous interval or time span. It is most
+* frequently used to show trends and relationships (when grouped with other lines). Line Graphs also help
+* to give a "big picture" over an interval, to see how it has developed over that period
+*/
+public class LineChart extends CartesianChart {
     
-    private int dotSize = 7;
-    private int lineStroke = 1;
+    private int dotSize;
+    private int lineStroke;
     
-    Lines(int x, int y, int width, int height) {
+    
+    /**
+    * Create a line chart in cartesian coordinates
+    * @see CartesianChart
+    * @param dotSize       the size of datum point dots
+    * @param lineStroke    the stroke width of the lines
+    */
+    LineChart(int x, int y, int width, int height, int dotSize, int lineStroke) {
         super(x, y, width, height);
+        this.dotSize = dotSize;
+        this.lineStroke = lineStroke;
     }
     
-    protected void drawSet(int setNum, Set set, FloatList stack) {
+    
+    /**
+    * Draw a dataset
+    * @see Chart
+    */
+    protected void drawDataSet(int setNum, DataSet set, FloatList stack) {
         PVector prevPos = null;
         float dX = (float)(limitsMax.x - limitsMin.x) / (maxX.x - minX.x);
         
@@ -91,21 +142,31 @@ public class Lines extends Cartesian {
 
 
 
-public class Area extends Cartesian {
+/**
+* rea Graphs are used to display the development of quantitative values over an interval or time period.
+* They are most commonly used to show trends, rather then convey specific values
+*/
+public class AreaChart extends CartesianChart {
     
-    private int opacity = 70;
+    private int opacity;
     
-    Area(int x, int y, int width, int height) {
+    
+    /**
+    * Create an area chart in cartesian coordinates
+    * @see CartesianChart
+    * @param opacity    the area opacity
+    */
+    AreaChart(int x, int y, int width, int height, int opacity) {
         super(x, y, width, height);
-    }
-    
-    
-    public void setOpacity(int opacity) {
         this.opacity = opacity;
     }
     
     
-    protected void drawSet(int setNum, Set set, FloatList stack) {
+    /**
+    * Draw a dataset
+    * @see Chart
+    */
+    protected void drawDataSet(int setNum, DataSet set, FloatList stack) {
         PVector prevPos = null;
         PVector prevStack = null;
         
@@ -135,24 +196,30 @@ public class Area extends Cartesian {
 }
 
 
-
-public class Bars extends Cartesian {
+/**
+* Bar Chart show discrete, numerical comparisons across categories. One axis of the chart shows the specific
+* categories being compared and the other axis represents a discrete value scale.
+*/
+public class BarChart extends CartesianChart {
 
     private int opacity = 80;
     
-    public Bars(int x, int y, int width, int height) {
+    
+    /**
+    * Create a bar chart in cartesian coordinates
+    * @see CartesianChart
+    */
+    public BarChart(int x, int y, int width, int height) {
         super(x, y, width, height);
     }
     
     
-    public void setOpacity(int opacity) {
-        this.opacity = opacity;
-    }
-    
-    
+    /**
+    * Draw axis if required
+    */
     @Override
-    protected void drawAxis(boolean showX, boolean showY) {
-        if(showX) {
+    protected void drawAxis() {
+        if(showAxisX) {
             float dX = (float)(limitsMax.x - limitsMin.x) / (maxX.x - minX.x + 1);
             int i = minX.x;
             for(float x = 0; x <= SIZE.x; x += dX) {
@@ -166,7 +233,11 @@ public class Bars extends Cartesian {
     }
     
     
-    protected void drawSet(int setNum, Set set, FloatList stack) {
+    /**
+    * Draw a dataset
+    * @see Chart
+    */
+    protected void drawDataSet(int setNum, DataSet set, FloatList stack) {
         
         float dX = (float)(limitsMax.x - limitsMin.x) / (maxX.x - minX.x + 1);
         float barW = stacked ? dX : dX / sets.size();
