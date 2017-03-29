@@ -101,27 +101,34 @@ public abstract class Chart {
     
     
     /**
-    * Add dataset(s) to chart. after one dataset is added, min and max boundaries are recalculated
+    * Add dataset(s) to chart. After one dataset is added, min and max boundaries are recalculated
     * @param sets    the set(s) to add
     */
     public void add(DataSet... newSets) {
         for(DataSet set : newSets) {
-            if( !set.isEmpty() ) {
-                sets.add(set);
-                if( !stacked ) {
-                    if( minY == null || set.min().y < minY.y ) minY = set.min();
-                    if( maxY == null || set.max().y > maxY.y ) maxY = set.max();
-                }
-                if( minX == null || set.first().x < minX.x ) minX = set.first();
-                if( maxX == null || set.last().x > maxX.x ) maxX = set.last();
-                
-                for(Entry l : set.getLabels().entrySet()) {
-                    int x = (int) l.getKey();
-                    String label = (String) l.getValue();
-                    if( !labels.containsKey(x) ) labels.put(x, label);
-                    else if( !labels.get(x).equals(label) ) labels.put(x, labels.get(x) + "\n" + label); 
-                }
-                
+            if( !set.isEmpty() ) sets.add(set);
+        }
+        calcBounds();
+    }
+    
+    
+    /**
+    * Calculate chart horizontal and vertical bounds
+    */
+    public void calcBounds() {
+        for(DataSet set : sets) {
+            if( !stacked ) {
+                if( minY == null || set.min().y < minY.y ) minY = set.min();
+                if( maxY == null || set.max().y > maxY.y ) maxY = set.max();
+            }
+            if( minX == null || set.first().x < minX.x ) minX = set.first();
+            if( maxX == null || set.last().x > maxX.x ) maxX = set.last();
+            
+            for(Entry l : set.getLabels().entrySet()) {
+                int x = (int) l.getKey();
+                String label = (String) l.getValue();
+                if( !labels.containsKey(x) ) labels.put(x, label);
+                else if( !labels.get(x).equals(label) ) labels.put(x, labels.get(x) + "\n" + label); 
             }
         }
         if(stacked) calcStackedBounds();
@@ -143,6 +150,14 @@ public abstract class Chart {
         for(int i = 0; i < stack.length; i++) {
             if( maxY == null || stack[i] > maxY.y ) maxY = new Datum( minX.x + i, stack[i], "MAX" );
         }
+    }
+    
+    
+    /**
+    * Update chart values. Is used as an alias for calcBounds() method
+    */
+    public void update() {
+        calcBounds();
     }
     
     

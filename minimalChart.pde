@@ -23,6 +23,7 @@
 
 
 Chart tempLines, tempArea, tempBars, tempBarsStacked, playersRadar, agesPie;
+DataSet tempMin, tempMax, tempRand;
 Threshold threshold;
 
 void setup() {
@@ -35,9 +36,9 @@ void setup() {
     
     threshold = new Threshold("Alert", 2, 15, #FF0000);
     
-    DataSet tempMin = new DataSet("Tmin", "ºC", #3399FF);
-    DataSet tempMax = new DataSet("Tmin", "ºC", #FF6655);
-    DataSet tempRand = new DataSet("Trand", "ºC", #FFB347); 
+    tempMin = new DataSet("Tmin", "ºC", #3399FF);
+    tempMax = new DataSet("Tmin", "ºC", #FF6655);
+    tempRand = new DataSet("Trand", "ºC", #FFB347); 
     for(int i = 0; i < 12; i++) {
         tempMin.add( new Datum(i, random(0, 15), months[i % months.length]) );
         tempMax.add( new Datum(i, random(15, 30), months[i % months.length]) );
@@ -46,7 +47,7 @@ void setup() {
     
     tempLines = new LineChart(25, 25, 450, 100, 5, 1);
     tempLines.showAxis(true, false).setDecimals(1);
-    //tempLines.addThreshold(threshold);
+    tempLines.addThreshold(threshold);
     tempLines.add(tempMin, tempMax, tempRand);
     
     tempArea = new AreaChart(25, 175, 450, 100, 70);
@@ -100,5 +101,19 @@ void draw() {
     tempBarsStacked.draw();
     
     //threshold.draw(tempBars);
+    
+}
+
+
+void mouseClicked() {
+    
+    tempMin.add( new Datum(tempMin.size(), random(0, 50), "random") );
+    tempMax.add( new Datum(tempMax.size(), random(0, 50), "random") );
+    tempRand.add( new Datum(tempRand.size(), random(0, 50), "random") );
+    
+    tempLines.update();
+    tempArea.update();
+    tempBars.update();
+    tempBarsStacked.update();
     
 }
