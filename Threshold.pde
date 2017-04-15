@@ -38,6 +38,15 @@ protected class Threshold {
     
     
     /**
+    * Set threshold opacity
+    * @param opacity    the threshold opacity
+    */
+    public void opacity(int opacity) {
+        this.opacity = opacity;
+    }
+    
+    
+    /**
     * Draw the threshold in a specific chart
     * @param chart    the chart to draw the threshold in
     */

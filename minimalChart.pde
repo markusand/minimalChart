@@ -35,6 +35,7 @@ void setup() {
     String[] months = new String[] { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
     
     threshold = new Threshold("Alert", 2, 15, #FF0000);
+    threshold.opacity(30);
     
     tempMin = new DataSet("Tmin", "ºC", #3399FF);
     tempMax = new DataSet("Tmin", "ºC", #FF6655);
@@ -100,7 +101,7 @@ void draw() {
     tempBars.draw();
     tempBarsStacked.draw();
     
-    //threshold.draw(tempBars);
+    threshold.draw(tempBars);
     
 }
 
