@@ -20,16 +20,9 @@ protected abstract class PolarChart extends Chart {
         maxR = min(center.x, center.y);
         limitsMin = new PVector(0, 0);
         limitsMax = new PVector(TWO_PI, maxR);
+        stackable = false;
     }
-    
-    
-    /**
-    * Prevent possibility of making polar chart stacked, overriding the super class not assigning any change
-    * @see Chart
-    */
-    @Override
-    public Chart stacked(boolean stacked) { return this; }
-    
+
     
     /**
     * Check wheter a point is close to a reference in the chart. In polar coordinates, the reference point is defined

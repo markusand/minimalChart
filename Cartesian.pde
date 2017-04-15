@@ -51,22 +51,14 @@ public class ScatterChart extends CartesianChart {
     
     private int dotSize = 5;
     
-    
     /**
     * Create a scatter chart in cartesian coordinates
     * @see CartesianChart
     */
     ScatterChart(int x, int y, int width, int height) {
         super(x, y, width, height);
+        stackable = false;
     }
-    
-    
-    /**
-    * Prevent possibility of making scatter chart stacked, overriding the super class not assigning any change
-    * @see Chart
-    */
-    @Override
-    public Chart stacked(boolean stacked) { return this; }
     
     
     /**
@@ -99,7 +91,6 @@ public class LineChart extends CartesianChart {
     
     private int dotSize;
     private int lineStroke;
-    
     
     /**
     * Create a line chart in cartesian coordinates
@@ -149,7 +140,6 @@ public class LineChart extends CartesianChart {
 public class AreaChart extends CartesianChart {
     
     private int opacity;
-    
     
     /**
     * Create an area chart in cartesian coordinates

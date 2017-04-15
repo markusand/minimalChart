@@ -18,6 +18,7 @@ public abstract class Chart {
     protected boolean showAxisY = false;
     protected int decimals = 0;
     
+    protected boolean stackable = true;
     protected boolean stacked = false;
     
     protected ArrayList<DataSet> sets = new ArrayList();  
@@ -61,7 +62,7 @@ public abstract class Chart {
     * @return           the chart itself, simply used for method chaining
     */
     public Chart stacked(boolean stacked) {
-        this.stacked = stacked;
+        if(stackable) this.stacked = stacked;
         return this;
     }
     
@@ -108,14 +109,14 @@ public abstract class Chart {
         for(DataSet set : newSets) {
             if( !set.isEmpty() ) sets.add(set);
         }
-        calcBounds();
+        update();
     }
     
     
     /**
-    * Calculate chart horizontal and vertical bounds
+    * Update chart values, calculate chart horizontal and vertical bounds
     */
-    public void calcBounds() {
+    public void update() {
         for(DataSet set : sets) {
             if( !stacked ) {
                 if( minY == null || set.min().y < minY.y ) minY = set.min();
@@ -150,14 +151,6 @@ public abstract class Chart {
         for(int i = 0; i < stack.length; i++) {
             if( maxY == null || stack[i] > maxY.y ) maxY = new Datum( minX.x + i, stack[i], "MAX" );
         }
-    }
-    
-    
-    /**
-    * Update chart values. Is used as an alias for calcBounds() method
-    */
-    public void update() {
-        calcBounds();
     }
     
     
