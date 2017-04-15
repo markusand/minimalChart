@@ -65,7 +65,15 @@ Set number of decimals to show in tooltips and axis
 A threshold can be added to chart. Threshold has a title and specified color, and can be a line (if you define only one value) or an area (if you define 2 values)
 
 ```
-threshold = new Threshold("Alert", 2, 15, #FF0000);
+alertTemp = new Threshold("Alert", 2, 15, #FF0000);
+```
+
+Threshold can be drawn in 2 different ways. First if added to a specific chart, or directly draw it passing specific chart
+
+```
+temp.addThreshold(alertTemp);
+
+alertTemp.draw(temp);
 ```
 
 ## Licensing
